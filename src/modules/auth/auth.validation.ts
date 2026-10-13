@@ -13,11 +13,9 @@ const bloodGroupEnum = z.enum([
 
 export const registerValidationSchema = z.object({
   body: z.object({
-    name: z.string({ required_error: "Name is required" }).min(2),
-    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
-    password: z
-      .string({ required_error: "Password is required" })
-      .min(6, "Password must be at least 6 characters"),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
     phone: z.string().optional(),
     isDonor: z.boolean().optional(),
     bloodGroup: bloodGroupEnum.optional(),
@@ -28,17 +26,17 @@ export const registerValidationSchema = z.object({
 
 export const loginValidationSchema = z.object({
   body: z.object({
-    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
-    password: z.string({ required_error: "Password is required" }),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(1, "Password is required"),
   }),
 });
 
 export const googleAuthValidationSchema = z.object({
   body: z.object({
     idToken: z.string().optional(),
-    googleId: z.string({ required_error: "Google ID is required" }),
-    email: z.string({ required_error: "Email is required" }).email(),
-    name: z.string({ required_error: "Name is required" }),
+    googleId: z.string().min(1, "Google ID is required"),
+    email: z.string().email("Invalid email address"),
+    name: z.string().min(1, "Name is required"),
     avatar: z.string().optional(),
   }),
 });

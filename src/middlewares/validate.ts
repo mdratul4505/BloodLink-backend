@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
-import type { AnyZodObject } from "zod";
+import type { ZodType } from "zod";
 
-export const validateRequest = (schema: AnyZodObject) => {
+export const validateRequest = (schema: ZodType<any>) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const parsed = await schema.parseAsync({

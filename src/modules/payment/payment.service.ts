@@ -190,7 +190,7 @@ export const handleBkashCallback = async (
           trxId,
           executeResult,
           queryResult,
-        },
+        } as any,
       },
     });
 

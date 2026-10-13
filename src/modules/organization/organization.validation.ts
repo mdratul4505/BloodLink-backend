@@ -4,12 +4,12 @@ const orgTypeEnum = z.enum(["HOSPITAL", "BLOOD_BANK", "VOLUNTEER_GROUP"]);
 
 export const applyOrganizationSchema = z.object({
   body: z.object({
-    name: z.string({ required_error: "Organization name is required" }).min(2),
+    name: z.string().min(2, "Organization name is required"),
     type: orgTypeEnum.default("HOSPITAL"),
-    address: z.string({ required_error: "Address is required" }).min(3),
-    district: z.string({ required_error: "District is required" }).min(2),
+    address: z.string().min(3, "Address is required"),
+    district: z.string().min(2, "District is required"),
     upazila: z.string().optional(),
-    contactPhone: z.string({ required_error: "Contact phone is required" }).min(6),
+    contactPhone: z.string().min(6, "Contact phone is required"),
     email: z.string().email("Invalid email").optional(),
   }),
 });

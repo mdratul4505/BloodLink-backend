@@ -5,12 +5,12 @@ const attendanceStatusEnum = z.enum(["REGISTERED", "ATTENDED", "MISSED"]);
 
 export const createCampSchema = z.object({
   body: z.object({
-    organizationId: z.string({ required_error: "Organization ID is required" }),
-    title: z.string({ required_error: "Camp title is required" }).min(3),
+    organizationId: z.string().min(1, "Organization ID is required"),
+    title: z.string().min(3, "Camp title is required"),
     description: z.string().optional(),
-    venue: z.string({ required_error: "Venue is required" }).min(3),
-    district: z.string({ required_error: "District is required" }).min(2),
-    date: z.string().datetime("Date must be a valid ISO string"),
+    venue: z.string().min(3, "Venue is required"),
+    district: z.string().min(2, "District is required"),
+    date: z.string().min(1, "Date is required"),
   }),
 });
 
@@ -22,7 +22,7 @@ export const updateCampStatusSchema = z.object({
 
 export const updateAttendanceSchema = z.object({
   body: z.object({
-    userId: z.string({ required_error: "User ID is required" }),
+    userId: z.string().min(1, "User ID is required"),
     attendance: attendanceStatusEnum,
   }),
 });

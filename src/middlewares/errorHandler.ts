@@ -9,7 +9,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
   res,
   next,
 ): void => {
-  let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+  let statusCode: number = httpStatus.INTERNAL_SERVER_ERROR;
   let message = "Something went wrong!";
   let errors: Array<{ field?: string; message: string }> = [];
 

@@ -19,7 +19,6 @@ const requestStatusEnum = z.enum([
   "CANCELLED",
   "EXPIRED",
 ]);
-const responseStatusEnum = z.enum(["AVAILABLE", "UNABLE", "CONFIRMED", "DONATED"]);
 
 export const createBloodRequestSchema = z.object({
   body: z.object({
@@ -32,8 +31,8 @@ export const createBloodRequestSchema = z.object({
     contactPhone: z.string().min(6, "Contact phone is required"),
     note: z.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: z.string().datetime("neededBy must be a valid ISO date string"),
-    organizationId: z.string().uuid().optional(),
+    neededBy: z.string(),
+    organizationId: z.string().optional(),
   }),
 });
 
@@ -48,8 +47,8 @@ export const updateBloodRequestSchema = z.object({
     contactPhone: z.string().min(6).optional(),
     note: z.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: z.string().datetime().optional(),
-    organizationId: z.string().uuid().optional(),
+    neededBy: z.string().optional(),
+    organizationId: z.string().optional(),
   }),
 });
 
@@ -68,9 +67,9 @@ export const donorRespondSchema = z.object({
 
 export const completeDonationSchema = z.object({
   body: z.object({
-    donorId: z.string({ required_error: "Donor ID is required" }),
+    donorId: z.string().min(1, "Donor ID is required"),
     units: z.number().int().min(1).default(1),
-    donatedAt: z.string().datetime().optional(),
+    donatedAt: z.string().optional(),
   }),
 });
 

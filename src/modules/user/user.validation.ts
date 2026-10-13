@@ -27,7 +27,7 @@ export const updateUserProfileSchema = z.object({
 
 export const toggleDonorAvailabilitySchema = z.object({
   body: z.object({
-    isAvailable: z.boolean({ required_error: "isAvailable is required" }),
+    isAvailable: z.boolean(),
     lastDonationDate: z.string().datetime().optional().or(z.date().optional()),
   }),
 });
