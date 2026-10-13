@@ -1,0 +1,37 @@
+model Organization {
+  id                 String              @id @default(uuid())
+  name               String
+  type               OrganizationType    @default(HOSPITAL)
+  address            String
+  district           String
+  upazila            String?
+  contactPhone       String?
+  email              String?
+  verificationStatus VerificationStatus  @default(PENDING)
+  rejectionReason    String?
+  ownerId            String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  owner              User                @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  members            OrganizationMember[]
+  camps              DonationCamp[]
+  coordinatedRequests BloodRequest[]
+
+  @@index([verificationStatus, district])
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String        @id @default(uuid())
+  organizationId String
+  userId         String
+  roleInOrg      OrgMemberRole @default(MEMBER)
+  createdAt      DateTime      @default(now())
+
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}

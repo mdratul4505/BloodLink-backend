@@ -1,0 +1,18 @@
+model DonorProfile {
+  id               String      @id @default(uuid())
+  userId           String      @unique
+  bloodGroup       BloodGroup
+  district         String
+  upazila          String?
+  isAvailable      Boolean     @default(true)
+  lastDonationDate DateTime?
+  bio              String?
+  totalDonations   Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([bloodGroup, district, isAvailable])
+  @@map("donor_profiles")
+}
