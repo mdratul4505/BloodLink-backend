@@ -1,0 +1,685 @@
+{
+  "info": {
+    "name": "BloodLink API Collection",
+    "description": "Comprehensive Postman collection for BloodLink backend with all 35+ API endpoints across 9 modules.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth Module",
+      "item": [
+        {
+          "name": "POST Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\",\n  \"phone\": \"01711223344\",\n  \"isDonor\": true,\n  \"bloodGroup\": \"O_POSITIVE\",\n  \"district\": \"Dhaka\",\n  \"upazila\": \"Dhanmondi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "POST Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('adminAccessToken', res.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bloodlink.org\",\n  \"password\": \"Admin@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST Google Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"googleId\": \"google_oauth_123456\",\n  \"email\": \"googleuser@example.com\",\n  \"name\": \"Google User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "google"]
+            }
+          }
+        },
+        {
+          "name": "POST Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "POST Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User & Donor Profile",
+      "item": [
+        {
+          "name": "GET My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"01899887766\",\n  \"bio\": \"Regular voluntary blood donor.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Toggle Donor Availability",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isAvailable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/donors/me/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["donors", "me", "availability"]
+            }
+          }
+        },
+        {
+          "name": "GET Search Donors (Filtered & Cached)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/donors?bloodGroup=O_POSITIVE&district=Dhaka&isAvailable=true&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["donors"],
+              "query": [
+                { "key": "bloodGroup", "value": "O_POSITIVE" },
+                { "key": "district", "value": "Dhaka" },
+                { "key": "isAvailable", "value": "true" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Donor Details By ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/donors/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["donors", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Blood Requests",
+      "item": [
+        {
+          "name": "POST Create Blood Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientName\": \"Jane Smith\",\n  \"bloodGroup\": \"O_POSITIVE\",\n  \"units\": 2,\n  \"hospitalName\": \"Dhaka Medical College Hospital\",\n  \"district\": \"Dhaka\",\n  \"upazila\": \"Shahbagh\",\n  \"contactPhone\": \"01799887766\",\n  \"urgency\": \"URGENT\",\n  \"neededBy\": \"2026-10-20T12:00:00.000Z\",\n  \"note\": \"Emergency operation scheduled.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests"]
+            }
+          }
+        },
+        {
+          "name": "GET All Blood Requests",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests?status=OPEN&bloodGroup=O_POSITIVE&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests"],
+              "query": [
+                { "key": "status", "value": "OPEN" },
+                { "key": "bloodGroup", "value": "O_POSITIVE" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET My Blood Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests/my-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests", "my-requests"]
+            }
+          }
+        },
+        {
+          "name": "GET Blood Request By ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "POST Respond to Request (Donor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"AVAILABLE\",\n  \"message\": \"I am nearby and can donate within 2 hours.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests/:id/respond",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests", ":id", "respond"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "GET Request Responses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests/:id/responses",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests", ":id", "responses"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "PATCH Update Request Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests", ":id", "status"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "POST Complete Donation (Technical Challenge Transaction)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donorId\": \"\",\n  \"units\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blood-requests/:id/complete-donation",
+              "host": ["{{baseUrl}}"],
+              "path": ["blood-requests", ":id", "complete-donation"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Organizations & Camps",
+      "item": [
+        {
+          "name": "POST Apply Organization",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"City Blood Foundation\",\n  \"type\": \"VOLUNTEER_GROUP\",\n  \"address\": \"Mirpur 10\",\n  \"district\": \"Dhaka\",\n  \"contactPhone\": \"01722334455\",\n  \"email\": \"contact@cityblood.org\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations",
+              "host": ["{{baseUrl}}"],
+              "path": ["organizations"]
+            }
+          }
+        },
+        {
+          "name": "GET All Organizations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/organizations?verificationStatus=APPROVED",
+              "host": ["{{baseUrl}}"],
+              "path": ["organizations"],
+              "query": [
+                { "key": "verificationStatus", "value": "APPROVED" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Create Donation Camp",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationId\": \"\",\n  \"title\": \"Winter Blood Donation Camp 2026\",\n  \"venue\": \"National Stadium Compound\",\n  \"district\": \"Dhaka\",\n  \"date\": \"2026-11-15T09:00:00.000Z\",\n  \"description\": \"Free health checkup and voluntary blood donation drive.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/camps",
+              "host": ["{{baseUrl}}"],
+              "path": ["camps"]
+            }
+          }
+        },
+        {
+          "name": "GET All Donation Camps",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/camps?status=UPCOMING",
+              "host": ["{{baseUrl}}"],
+              "path": ["camps"],
+              "query": [{ "key": "status", "value": "UPCOMING" }]
+            }
+          }
+        },
+        {
+          "name": "POST Register for Camp",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/camps/:id/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["camps", ":id", "register"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. In-App Notifications",
+      "item": [
+        {
+          "name": "GET My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/:id/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", ":id", "read"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "PATCH Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "read-all"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. bKash Payment (Voluntary Support)",
+      "item": [
+        {
+          "name": "POST Create bKash Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"purpose\": \"PLATFORM_SUPPORT\",\n  \"payerReference\": \"Voluntary Donation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/bkash/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "bkash", "create"]
+            }
+          }
+        },
+        {
+          "name": "GET bKash Callback (Executed by Gateway)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/payments/bkash/callback?paymentID=BKASH_PID_12345&status=success",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "bkash", "callback"],
+              "query": [
+                { "key": "paymentID", "value": "BKASH_PID_12345" },
+                { "key": "status", "value": "success" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET My Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "my"]
+            }
+          }
+        },
+        {
+          "name": "GET Payment Details By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Admin Dashboard & Moderation",
+      "item": [
+        {
+          "name": "GET Admin Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?role=USER&status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"],
+              "query": [
+                { "key": "role", "value": "USER" },
+                { "key": "status", "value": "ACTIVE" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH Admin Suspend / Activate User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUSPENDED\",\n  \"reason\": \"Suspicious activity reported\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", ":id", "status"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "PATCH Admin Verify Organization",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verificationStatus\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/organizations/:id/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "organizations", ":id", "verify"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "GET Admin Dashboard Stats (Cached)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "dashboard-stats"]
+            }
+          }
+        },
+        {
+          "name": "GET Admin Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/audit-logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "audit-logs"]
+            }
+          }
+        },
+        {
+          "name": "GET Admin All Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "payments"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
