@@ -1,6 +1,7 @@
 enum Role {
   USER
   ORGANIZATION
+  HOSPITAL
   ADMIN
 }
 
