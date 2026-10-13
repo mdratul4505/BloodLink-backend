@@ -1,35 +1,62 @@
-import app from "./app";
-import config from "./app/config";
-import { transporter } from "./app/lib/nodemailer";
-import { prisma } from "./app/lib/prisma";
-import { redisClient } from "./app/lib/redis";
-import { seedSuperAdmin, seedTesterAdmin, seedTesterDoctor } from "./app/utils/seed";
+import type { Server } from "http";
+import app from "./app.js";
+import config from "./config/index.js";
+import prisma from "./config/prisma.js";
+import { connectRedis } from "./config/redis.js";
+import initScheduledJobs from "./utils/cron.js";
+import seedSuperAdmin from "./utils/seed.js";
 
-const PORT = config.port;
+let server: Server;
 
 const main = async () => {
-	try {
-		await prisma.$connect();
-		console.log("Connected to the database successfully.");
+  try {
+    // 1. Connect to PostgreSQL via Prisma
+    await prisma.$connect();
+    console.log("Connected to PostgreSQL database successfully.");
 
-		await redisClient.connect();
-		console.log("Redis Connected Successfully.");
+    // 2. Connect to Redis (graceful fallback if offline)
+    await connectRedis();
 
-		await transporter.verify();
-		console.log("Nodemailer Connected Successfully.");
-		
-		await seedSuperAdmin();
-		await seedTesterAdmin();
-		await seedTesterDoctor();
-		
-		app.listen(PORT, () => {
-			console.log(`Server is running on port ${PORT}`);
-		});
-	} catch (error) {
-		console.error("Error starting the server:", error);
-		await prisma.$disconnect();
-		process.exit(1);
-	}
+    // 3. Seed initial Super Admin if not present
+    await seedSuperAdmin();
+
+    // 4. Start scheduled cron tasks (blood request expiration)
+    initScheduledJobs();
+
+    // 5. Start HTTP server
+    server = app.listen(config.port, () => {
+      console.log(`BloodLink Server is running on port ${config.port}`);
+      console.log(`Environment: ${config.env}`);
+      console.log(`API Docs: http://localhost:${config.port}/api/v1`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    await prisma.$disconnect();
+    process.exit(1);
+  }
 };
+
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled Rejection detected:", error);
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  } else {
+    process.exit(1);
+  }
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception detected:", error);
+  process.exit(1);
+});
+
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received. Gracefully shutting down...");
+  if (server) server.close();
+  await prisma.$disconnect();
+  process.exit(0);
+});
 
 main();

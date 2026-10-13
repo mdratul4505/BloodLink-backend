@@ -1,75 +1,56 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import crypto from "crypto";
-import express, {
-	type Application,
-	NextFunction,
-	type Request,
-	type Response,
-} from "express";
+import express, { type Application, type Request, type Response } from "express";
+import helmet from "helmet";
 import httpStatus from "http-status";
-import config from "./app/config";
-import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
-import { notFound } from "./app/middleware/notFound";
-import { AuthRoutes } from "./app/module/auth/auth.route";
-import { UserRoutes } from "./app/module/user/user.route";
+import config from "./config/index.js";
+import globalErrorHandler from "./middlewares/errorHandler.js";
+import notFound from "./middlewares/notFound.js";
+import applicationRoutes from "./routes/index.js";
 
 const app: Application = express();
 
+// Security middlewares
+app.use(helmet());
 app.use(
-	cors({
-		origin: config.frontend_url,
-		credentials: true,
-	}),
+  cors({
+    origin: [config.frontend_url, "http://localhost:3000", "http://localhost:5173"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
 );
 
-// Enable URL-encoded form data parsing
-app.use(express.urlencoded({ extended: true }));
-
-// Middleware to parse JSON bodies
+// Body and Cookie parsers
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use("/api/v1/auth", AuthRoutes);
-app.use("/api/v1/user", UserRoutes);
-
-app.get("/test", async (req: Request, res: Response, next : NextFunction) => {
-
-	try {
-
-		// 100000 > 999999 > 1000000
-			const otp = crypto.randomInt(100000, 1000000) // 1, 2, 3, 4, 5, 6,7,8 ,9, 10 => X-11
-		
-			// await redisClient.set("forgot-password-otp:patient1@gmail.com", "123456", {
-			// 	expiration : {
-			// 		type : "EX",
-			// 		value : 60
-			// 	}
-			// })
-
-		
-
-
-		res.status(httpStatus.OK).json({
-			success: true,
-			message: "Welcome to PH Healthcare System Backend",
-			data : otp
-		});
-	} catch (error) {
-		console.log(error);
-		next(error)
-	}
-})
-
-// Basic route
-app.get("/", async (req: Request, res: Response) => {
-	res.status(httpStatus.OK).json({
-		success: true,
-		message: "Welcome to PH Healthcare System Backend",
-	});
+// Root health check endpoint
+app.get("/", (_req: Request, res: Response) => {
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Welcome to BloodLink API - Empowering Blood Donors & Saving Lives",
+    version: "1.0.0",
+    docs: "/api/v1",
+  });
 });
 
-app.use(globalErrorHandler);
+app.get("/health", (_req: Request, res: Response) => {
+  res.status(httpStatus.OK).json({
+    success: true,
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Mount application routes
+app.use("/api/v1", applicationRoutes);
+app.use("/api", applicationRoutes);
+app.use("/", applicationRoutes);
+
+// Error handlers
 app.use(notFound);
+app.use(globalErrorHandler);
 
 export default app;
