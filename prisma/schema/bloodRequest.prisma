@@ -24,6 +24,7 @@ model BloodRequest {
   requester User            @relation("RequesterRelation", fields: [requesterId], references: [id], onDelete: Restrict)
   responses DonorResponse[]
   payments  Payment[]
+  notifications Notification[]
 
   @@index([status, bloodGroup, district, createdAt])
   @@index([requesterId, createdAt])
