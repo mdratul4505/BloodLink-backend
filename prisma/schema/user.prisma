@@ -1,33 +1,31 @@
 model User {
-  id              String     @id @default(uuid())
+  id              String      @id @default(uuid())
   name            String
-  email           String     @unique
-  password        String?                      
-  googleId        String?    @unique
-  role            Role       @default(USER)
-  status          UserStatus @default(ACTIVE)
-  isEmailVerified Boolean    @default(false)
+  email           String      @unique
+  password        String?
+  role            Role        @default(USER)
+  status          UserStatus  @default(ACTIVE)
+  googleId        String?     @unique
+  isVerified      Boolean     @default(false)
   phone           String?
+  avatar          String?
+  deletedAt       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  // Donor info
-  isDonor          Boolean     @default(false)
-  bloodGroup       BloodGroup?
-  district         String?
-  upazila          String?
-  isAvailable      Boolean     @default(true)
-  lastDonationDate DateTime?
+  donorProfile        DonorProfile?
+  ownedOrganizations  Organization[]       @relation("OrgOwner")
+  organizationMembers OrganizationMember[]
+  requestsMade        BloodRequest[]       @relation("RequesterRelation")
+  donorResponses      DonorResponse[]
+  donations           Donation[]
+  campRegistrations   CampRegistration[]
+  notifications       Notification[]
+  payments            Payment[]
+  auditLogs           AuditLog[]           @relation("ActorRelation")
+  reviewsGiven        Review[]             @relation("ReviewerRelation")
+  reviewsReceived     Review[]             @relation("ReviewedDonorRelation")
 
-  deletedAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  // Relations
-  requestsMade   BloodRequest[] @relation("RequesterRelation")
-  donorResponses DonorResponse[]
-  notifications  Notification[]
-  payments       Payment[]
-
-  @@index([isDonor, bloodGroup, district, isAvailable])
   @@index([role, status])
   @@map("users")
 }

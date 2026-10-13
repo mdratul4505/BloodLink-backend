@@ -1,34 +1,36 @@
 model BloodRequest {
-  id           String        @id @default(uuid())
-  requesterId  String
-  // organizationId String?    // 🔜 Organization model বানানোর পর যোগ করবে
+  id             String        @id @default(uuid())
+  requesterId    String
+  organizationId String?
 
-  patientName  String?
-  bloodGroup   BloodGroup
-  units        Int
-  unitsFulfilled Int         @default(0)
-  hospitalName String
-  district     String
-  upazila      String?
-  contactPhone String
-  note         String?
+  patientName    String?
+  bloodGroup     BloodGroup
+  units          Int
+  unitsFulfilled Int           @default(0)
+  hospitalName   String
+  district       String
+  upazila        String?
+  contactPhone   String
+  note           String?
 
-  urgency      UrgencyLevel  @default(NORMAL)
-  status       RequestStatus @default(OPEN)
-  neededBy     DateTime
+  urgency        UrgencyLevel  @default(NORMAL)
+  status         RequestStatus @default(OPEN)
+  neededBy       DateTime
 
-  deletedAt    DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  requester User            @relation("RequesterRelation", fields: [requesterId], references: [id], onDelete: Restrict)
-  responses DonorResponse[]
-  payments  Payment[]
-  notifications Notification[]
+  requester      User          @relation("RequesterRelation", fields: [requesterId], references: [id], onDelete: Restrict)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  responses      DonorResponse[]
+  donations      Donation[]
+  payments       Payment[]
+  notifications  Notification[]
 
   @@index([status, bloodGroup, district, createdAt])
   @@index([requesterId, createdAt])
-  @@index([neededBy])          // expire cron-এর জন্য
+  @@index([neededBy])
   @@map("blood_requests")
 }
 
@@ -41,8 +43,8 @@ model DonorResponse {
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
-  request BloodRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  donor   User         @relation(fields: [donorId], references: [id], onDelete: Restrict)
+  request   BloodRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donor     User           @relation(fields: [donorId], references: [id], onDelete: Restrict)
 
   @@unique([requestId, donorId])
   @@index([donorId, createdAt])
