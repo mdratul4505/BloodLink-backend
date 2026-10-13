@@ -35,10 +35,34 @@ enum UserStatus {
   SUSPENDED
 }
 
-
 enum PaymentStatus {
-  INITIATED
-  SUCCESS
+  PENDING   
+  PAID         
   FAILED
-  REFUNDED
-} 
+  CANCELLED
+}
+
+enum PaymentProvider {
+  BKASH
+}
+
+enum PaymentPurpose {
+  PLATFORM_SUPPORT   
+  EMERGENCY_FUND    
+}
+
+enum UrgencyLevel {
+  NORMAL
+  URGENT
+  CRITICAL
+}
+
+
+enum NotificationType {
+  NEW_MATCHING_REQUEST   
+  DONOR_RESPONDED        
+  RESPONSE_CONFIRMED     
+  REQUEST_STATUS_CHANGED 
+  PAYMENT_UPDATE         
+  SYSTEM                
+}

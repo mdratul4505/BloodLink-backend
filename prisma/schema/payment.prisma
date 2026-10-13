@@ -1,0 +1,46 @@
+model Payment {
+  id        String          @id @default(uuid())
+  userId    String
+  provider  PaymentProvider @default(BKASH)
+  purpose   PaymentPurpose  @default(PLATFORM_SUPPORT)
+  status    PaymentStatus   @default(PENDING)
+
+  amount    Decimal         @db.Decimal(10, 2)
+  currency  String          @default("BDT")
+
+  // bKash related
+  merchantInvoiceNumber String  @unique       
+  bkashPaymentId        String? @unique        
+  trxId                 String? @unique       
+  payerReference        String?               
+  payerMobile           String?               
+
+  requestId String?
+
+  failureReason String?
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id])
+  request BloodRequest?  @relation(fields: [requestId], references: [id])
+  events  PaymentEvent[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("payments")
+}
+
+
+model PaymentEvent {
+  id        String   @id @default(uuid())
+  paymentId String
+  eventType String   // CREATE, CALLBACK, EXECUTE, QUERY, VERIFIED, FAILED
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId, createdAt])
+  @@map("payment_events")
+}
