@@ -1,0 +1,30 @@
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String?
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  actor      User?    @relation("ActorRelation", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([action, targetType])
+  @@map("audit_logs")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  donorId    String
+  reviewerId String
+  rating     Int      @default(5)
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  donor      User     @relation("ReviewedDonorRelation", fields: [donorId], references: [id], onDelete: Cascade)
+  reviewer   User     @relation("ReviewerRelation", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@index([donorId, rating])
+  @@map("reviews")
+}

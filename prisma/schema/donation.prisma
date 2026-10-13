@@ -1,0 +1,51 @@
+model Donation {
+  id        String        @id @default(uuid())
+  requestId String?
+  campId    String?
+  donorId   String
+  donatedAt DateTime      @default(now())
+  createdAt DateTime      @default(now())
+
+  request   BloodRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  camp      DonationCamp? @relation(fields: [campId], references: [id], onDelete: SetNull)
+  donor     User          @relation(fields: [donorId], references: [id], onDelete: Restrict)
+
+  @@index([donorId, donatedAt])
+  @@map("donations")
+}
+
+model DonationCamp {
+  id             String             @id @default(uuid())
+  organizationId String
+  title          String
+  description    String?
+  venue          String
+  district       String
+  date           DateTime
+  status         CampStatus         @default(UPCOMING)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  registrations  CampRegistration[]
+  donations      Donation[]
+
+  @@index([organizationId, date])
+  @@index([status, district])
+  @@map("donation_camps")
+}
+
+model CampRegistration {
+  id         String           @id @default(uuid())
+  campId     String
+  userId     String
+  attendance AttendanceStatus @default(REGISTERED)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  camp       DonationCamp     @relation(fields: [campId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([campId, userId])
+  @@map("camp_registrations")
+}
