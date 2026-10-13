@@ -23,6 +23,11 @@ enum RequestStatus {
   CANCELLED
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 
 enum PaymentStatus {
   INITIATED
