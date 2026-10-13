@@ -1,7 +1,12 @@
 enum Role {
   USER
-  HOSPITAL
+  ORGANIZATION
   ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum BloodGroup {
@@ -30,14 +35,45 @@ enum ResponseStatus {
   DONATED
 }
 
-enum UserStatus {
-  ACTIVE
-  SUSPENDED
+enum UrgencyLevel {
+  NORMAL
+  URGENT
+  CRITICAL
+}
+
+enum OrganizationType {
+  HOSPITAL
+  BLOOD_BANK
+  VOLUNTEER_GROUP
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrgMemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum CampStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  REGISTERED
+  ATTENDED
+  MISSED
 }
 
 enum PaymentStatus {
-  PENDING   
-  PAID         
+  PENDING
+  PAID
   FAILED
   CANCELLED
 }
@@ -47,22 +83,16 @@ enum PaymentProvider {
 }
 
 enum PaymentPurpose {
-  PLATFORM_SUPPORT   
-  EMERGENCY_FUND    
+  PLATFORM_SUPPORT
+  EMERGENCY_FUND
 }
-
-enum UrgencyLevel {
-  NORMAL
-  URGENT
-  CRITICAL
-}
-
 
 enum NotificationType {
-  NEW_MATCHING_REQUEST   
-  DONOR_RESPONDED        
-  RESPONSE_CONFIRMED     
-  REQUEST_STATUS_CHANGED 
-  PAYMENT_UPDATE         
-  SYSTEM                
+  NEW_MATCHING_REQUEST
+  DONOR_RESPONDED
+  RESPONSE_CONFIRMED
+  REQUEST_STATUS_CHANGED
+  PAYMENT_UPDATE
+  CAMP_UPDATE
+  SYSTEM
 }
