@@ -16,11 +16,18 @@ enum BloodGroup {
 }
 
 enum RequestStatus {
-  PENDING
-  ACCEPTED
-  IN_PROGRESS
+  OPEN
+  PARTIALLY_FULFILLED
   FULFILLED
   CANCELLED
+  EXPIRED
+}
+
+enum ResponseStatus {
+  AVAILABLE
+  UNABLE
+  CONFIRMED
+  DONATED
 }
 
 enum UserStatus {
