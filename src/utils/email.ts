@@ -55,11 +55,16 @@ export const sendEmail = async (options: SendEmailOptions): Promise<boolean> => 
       text: options.text || options.subject,
     };
 
+    console.log(
+      `[Email] Dispatching "${options.subject}" -> To: "${options.to}" (From: "${mailOptions.from}")`,
+    );
     const info = await mailer.sendMail(mailOptions);
-    console.log(`[Email] Sent "${options.subject}" to ${options.to} (MessageId: ${info.messageId})`);
+    console.log(
+      `[Email] Successfully delivered "${options.subject}" -> To: "${options.to}" (Accepted: ${JSON.stringify(info.accepted)}, MessageId: ${info.messageId})`,
+    );
     return true;
   } catch (error: any) {
-    console.error(`[Email] Error sending email to ${options.to}:`, error?.message || error);
+    console.error(`[Email] Error sending email to "${options.to}":`, error?.message || error);
     return false;
   }
 };

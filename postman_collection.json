@@ -19,6 +19,11 @@
       "key": "adminAccessToken",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "userEmail",
+      "value": "dev.ratul.coder1@gmail.com",
+      "type": "string"
     }
   ],
   "item": [
@@ -27,6 +32,22 @@
       "item": [
         {
           "name": "POST Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "}",
+                  "if (res.data && res.data.user && res.data.user.email) {",
+                  "  pm.collectionVariables.set('userEmail', res.data.user.email);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -61,6 +82,9 @@
                   "const res = pm.response.json();",
                   "if (res.data && res.data.accessToken) {",
                   "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "}",
+                  "if (res.data && res.data.user && res.data.user.email) {",
+                  "  pm.collectionVariables.set('userEmail', res.data.user.email);",
                   "}"
                 ]
               }
@@ -131,6 +155,22 @@
         },
         {
           "name": "POST Google Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "}",
+                  "if (res.data && res.data.user && res.data.user.email) {",
+                  "  pm.collectionVariables.set('userEmail', res.data.user.email);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -215,7 +255,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\"\n}"
+              "raw": "{\n  \"email\": \"{{userEmail}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/forgot-password",
@@ -241,7 +281,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\"\n}"
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"otp\": \"123456\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/verify-otp",
@@ -267,7 +307,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"BrandNewPassword@123\"\n}"
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"BrandNewPassword@123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/reset-password",
@@ -323,7 +363,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\"\n}"
+              "raw": "{\n  \"email\": \"{{userEmail}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/send-otp",

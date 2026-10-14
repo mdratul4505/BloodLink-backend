@@ -330,6 +330,10 @@ export const forgotPassword = async (email: string) => {
   const otp = generateOtp();
   await storeOtp(normalizedEmail, otp);
 
+  console.log(
+    `[Auth] Forgot password OTP requested for "${user.name}" (${normalizedEmail}). Sending OTP email to recipient: "${normalizedEmail}"`,
+  );
+
   // Send OTP via Gmail SMTP
   const emailSent = await sendOtpEmail(normalizedEmail, otp, user.name);
 
@@ -400,6 +404,10 @@ export const resetPassword = async (payload: {
   // Invalidate OTP immediately so it cannot be reused
   await removeOtp(normalizedEmail);
 
+  console.log(
+    `[Auth] Password reset with OTP for user "${user.name}" (${user.email}). Dispatching confirmation email to recipient: "${user.email}"`,
+  );
+
   // Quality feature: Send Password Changed Confirmation Email
   sendPasswordChangedEmail(user.email, user.name, new Date()).catch((err) =>
     console.error("Failed to send password changed email:", err?.message || err),
@@ -461,6 +469,10 @@ export const changePassword = async (
     where: { id: user.id },
     data: { password: hashedPassword },
   });
+
+  console.log(
+    `[Auth] Password changed for user "${user.name}" (ID: ${user.id}). Dispatching confirmation email to recipient: "${user.email}"`,
+  );
 
   // Quality feature: Send security confirmation email
   sendPasswordChangedEmail(user.email, user.name, new Date()).catch((err) =>
