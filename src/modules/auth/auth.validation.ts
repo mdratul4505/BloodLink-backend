@@ -88,10 +88,15 @@ export const resetPasswordValidationSchema = z.object({
 });
 
 export const changePasswordValidationSchema = z.object({
-  body: z.object({
-    oldPassword: z.string().min(1, "Old password is required"),
-    newPassword: z.string().min(6, "New password must be at least 6 characters"),
-  }),
+  body: z
+    .object({
+      oldPassword: z.string().optional(),
+      currentPassword: z.string().optional(),
+      newPassword: z.string().min(6, "New password must be at least 6 characters"),
+    })
+    .refine((data) => !!(data.oldPassword || data.currentPassword), {
+      message: "Old password (oldPassword or currentPassword) is required",
+    }),
 });
 
 export const AuthValidation = {

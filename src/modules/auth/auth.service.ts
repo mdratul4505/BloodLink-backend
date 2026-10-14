@@ -424,10 +424,19 @@ export const resetPassword = async (payload: {
 export const changePassword = async (
   userId: string,
   payload: {
-    oldPassword: string;
+    oldPassword?: string;
+    currentPassword?: string;
     newPassword: string;
   },
 ) => {
+  const oldPassword = payload.oldPassword || payload.currentPassword;
+  if (!oldPassword) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Old password is required. Please provide oldPassword or currentPassword.",
+    );
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -451,11 +460,11 @@ export const changePassword = async (
   }
 
   // Verify old password
-  const isMatch = await bcrypt.compare(payload.oldPassword, user.password);
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
   if (!isMatch) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "Current password (oldPassword) is incorrect.",
+      "Incorrect old password. The password you provided does not match your current password. If you do not remember your old password, please use Forgot Password (OTP) to reset it.",
     );
   }
 
