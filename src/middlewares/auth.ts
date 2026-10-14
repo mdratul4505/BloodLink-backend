@@ -92,4 +92,31 @@ export const auth = (...requiredRoles: string[]) => {
   };
 };
 
+export const optionalAuth = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    let token = req.headers.authorization;
+    if (token && token.startsWith("Bearer ")) {
+      token = token.split(" ")[1];
+    } else if (req.cookies?.accessToken) {
+      token = req.cookies.accessToken;
+    }
+
+    if (token) {
+      const blacklisted = await isTokenBlacklisted(token);
+      if (!blacklisted) {
+        const decoded = verifyToken(token, config.jwt.access_secret) as IAuthUser;
+        req.user = decoded;
+      }
+    }
+  } catch {
+    // Continue without user if token is invalid
+  }
+  next();
+};
+
 export default auth;
+

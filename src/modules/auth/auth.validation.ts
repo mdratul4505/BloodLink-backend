@@ -89,9 +89,13 @@ export const resetPasswordValidationSchema = z.object({
 
 export const changePasswordValidationSchema = z.object({
   body: z.object({
-    oldPassword: z.string().min(1, "Old password is required").optional(),
+    email: z.string().email("Invalid email address").optional(),
     otp: z.string().optional(),
-    newPassword: z.string().min(6, "New password must be at least 6 characters"),
+    oldPassword: z.string().optional(),
+    newPassword: z
+      .string()
+      .min(6, "New password must be at least 6 characters")
+      .optional(),
   }),
 });
 

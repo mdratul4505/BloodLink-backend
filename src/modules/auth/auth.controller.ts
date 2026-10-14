@@ -132,8 +132,13 @@ export const resetPassword = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const changePassword = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
-  const result = await AuthService.changePassword(userId, req.body);
+  const result = await AuthService.changePassword({
+    userId: req.user?.id,
+    email: req.body.email || req.user?.email,
+    oldPassword: req.body.oldPassword,
+    otp: req.body.otp,
+    newPassword: req.body.newPassword,
+  });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

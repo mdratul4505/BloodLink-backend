@@ -412,47 +412,101 @@ export const resetPassword = async (payload: {
   };
 };
 
-// 4. Change Password (Authenticated user with old password or OTP)
-export const changePassword = async (
-  userId: string,
-  payload: {
-    oldPassword?: string;
-    otp?: string;
-    newPassword: string;
-  },
-) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+// 4. Change Password (Works with email + OTP + newPassword; NO oldPassword needed!)
+export const changePassword = async (payload: {
+  userId?: string;
+  email?: string;
+  oldPassword?: string;
+  otp?: string;
+  newPassword?: string;
+}) => {
+  const targetEmail = (payload.email || "").toLowerCase().trim();
 
-  if (!user) {
+  // If user only provided email and no OTP / newPassword, automatically send OTP!
+  if (targetEmail && !payload.otp && !payload.newPassword && !payload.oldPassword) {
+    const otpResult = await forgotPassword(targetEmail);
+    return {
+      success: true,
+      step: "OTP_SENT",
+      message:
+        "An OTP verification code has been sent to " +
+        targetEmail +
+        ". Please submit this OTP with your new password to complete the change.",
+      email: targetEmail,
+      expiresIn: "10 minutes",
+    };
+  }
+
+  // Find user by userId or email
+  let user: any = null;
+  if (payload.userId) {
+    user = await prisma.user.findUnique({ where: { id: payload.userId } });
+  } else if (targetEmail) {
+    user = await prisma.user.findUnique({ where: { email: targetEmail } });
+  }
+
+  if (!user || user.deletedAt) {
     throw new AppError(httpStatus.NOT_FOUND, "User account not found");
   }
 
-  // If oldPassword provided, verify it
-  if (payload.oldPassword) {
+  if (user.status === "SUSPENDED") {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Your account is suspended. Please contact administrator.",
+    );
+  }
+
+  // If newPassword is not provided yet, send OTP so user can provide both
+  if (!payload.newPassword) {
+    await forgotPassword(user.email);
+    return {
+      success: true,
+      step: "OTP_SENT",
+      message:
+        "An OTP verification code has been sent to your email (" +
+        user.email +
+        "). Please provide this OTP along with your new password to change your password.",
+      email: user.email,
+      expiresIn: "10 minutes",
+    };
+  }
+
+  // Case 1: OTP verification (Default & recommended: no old password needed!)
+  if (payload.otp) {
+    const isValid = await verifyOtp(user.email, payload.otp);
+    if (!isValid) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Invalid or expired OTP verification code. Please request a new OTP if needed.",
+      );
+    }
+    await removeOtp(user.email);
+  } else if (payload.oldPassword) {
+    // Case 2: User explicitly provided old password
     if (!user.password) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        "Account has no existing password (registered via Google). Please use OTP reset.",
+        "Account was created via Google OAuth. Please use OTP to set a password.",
       );
     }
     const isOldMatch = await bcrypt.compare(payload.oldPassword, user.password);
     if (!isOldMatch) {
       throw new AppError(httpStatus.BAD_REQUEST, "Current password is incorrect");
     }
-  } else if (payload.otp) {
-    // If OTP provided, verify it
-    const isValid = await verifyOtp(user.email, payload.otp);
-    if (!isValid) {
-      throw new AppError(httpStatus.BAD_REQUEST, "Invalid or expired OTP code");
-    }
-    await removeOtp(user.email);
   } else {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Either your current password (oldPassword) or an email verification OTP must be provided.",
-    );
+    // Neither OTP nor oldPassword was provided, but newPassword is provided:
+    // Generate and send OTP to user's email!
+    await forgotPassword(user.email);
+    return {
+      success: true,
+      step: "OTP_SENT",
+      message:
+        "For your security, a 6-digit OTP verification code has been sent to your email (" +
+        user.email +
+        "). Please submit the OTP with your new password to complete the change.",
+      email: user.email,
+      expiresIn: "10 minutes",
+    };
   }
 
   // Hash new password
@@ -466,14 +520,16 @@ export const changePassword = async (
     data: { password: hashedPassword },
   });
 
-  // Quality feature: Send security alert
+  // Quality feature: Send security confirmation email
   sendPasswordChangedEmail(user.email, user.name, new Date()).catch((err) =>
     console.error("Failed to send password changed email:", err?.message || err),
   );
 
   return {
     success: true,
-    message: "Password changed successfully. A confirmation email has been sent.",
+    step: "COMPLETED",
+    message:
+      "Password changed successfully! A security confirmation email has been sent. You can now login with your new password.",
   };
 };
 

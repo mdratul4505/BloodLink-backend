@@ -282,14 +282,10 @@
           }
         },
         {
-          "name": "POST Change Password (Logged In User)",
+          "name": "POST Change Password (Email + OTP + NewPassword - No Old Password Needed)",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -297,7 +293,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oldPassword\": \"Password123\",\n  \"newPassword\": \"NewSecurePassword@123\"\n}"
+              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"MyNewPassword@123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/change-password",
@@ -307,6 +303,32 @@
               "path": [
                 "auth",
                 "change-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Send OTP (Enter Email to get OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/send-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "send-otp"
               ]
             }
           }
