@@ -3,6 +3,9 @@ import path from "path";
 
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
+const smtpUser = process.env.SMTP_USER || process.env.smtp_user || "";
+const smtpPassword = process.env.SMTP_PASSWORD || process.env.smtp_password || "";
+
 export const config = {
   env: process.env.NODE_ENV || "development",
   port: Number(process.env.PORT) || 5000,
@@ -27,11 +30,19 @@ export const config = {
     password: process.env.ADMIN_PASSWORD || "Admin@123456",
   },
   redis: {
+    url: process.env.REDIS_URL || undefined,
     host: process.env.REDIS_HOST || "localhost",
     port: Number(process.env.REDIS_PORT) || 6379,
     password: process.env.REDIS_PASSWORD || undefined,
-    url: process.env.REDIS_URL,
+    user: process.env.REDIS_USER || "default",
   },
+  email: {
+    smtp_user: smtpUser,
+    smtp_password: smtpPassword,
+    from: process.env.SMTP_FROM || `"BloodLink" <${smtpUser}>`,
+  },
+  smtp_user: smtpUser,
+  smtp_password: smtpPassword,
   bkash: {
     app_key: process.env.BKASH_APP_KEY || "sandbox_app_key",
     app_secret: process.env.BKASH_APP_SECRET || "sandbox_app_secret",

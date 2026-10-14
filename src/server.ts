@@ -2,9 +2,10 @@ import type { Server } from "http";
 import app from "./app.js";
 import config from "./config/index.js";
 import prisma from "./config/prisma.js";
-import { connectRedis } from "./config/redis.js";
 import initScheduledJobs from "./utils/cron.js";
 import seedSuperAdmin from "./utils/seed.js";
+import { connectRedis } from "./config/redis.js";
+import { verifySmtpConnection } from "./utils/email.js";
 
 let server: Server;
 
@@ -17,10 +18,13 @@ const main = async () => {
     // 2. Connect to Redis (graceful fallback if offline)
     await connectRedis();
 
-    // 3. Seed initial Super Admin if not present
+    // 3. Verify Email SMTP connection
+    await verifySmtpConnection();
+
+    // 4. Seed initial Super Admin if not present
     await seedSuperAdmin();
 
-    // 4. Start scheduled cron tasks (blood request expiration)
+    // 5. Start scheduled cron tasks (blood request expiration)
     initScheduledJobs();
 
     // 5. Start HTTP server

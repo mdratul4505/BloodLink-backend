@@ -1,4 +1,5 @@
 import { Router } from "express";
+import auth from "../../middlewares/auth.js";
 import rateLimiter from "../../middlewares/rateLimit.js";
 import validateRequest from "../../middlewares/validate.js";
 import AuthController from "./auth.controller.js";
@@ -37,6 +38,45 @@ router.post(
 );
 
 router.post("/logout", AuthController.logout);
+
+// --- Password Reset & OTP Features ---
+router.post(
+  "/forgot-password",
+  rateLimiter({
+    keyPrefix: "forgot-password",
+    maxRequests: 5,
+    windowSeconds: 60 * 15,
+    message: "Too many password reset requests. Please wait 15 minutes.",
+  }),
+  validateRequest(AuthValidation.forgotPasswordValidationSchema),
+  AuthController.forgotPassword,
+);
+
+router.post(
+  "/verify-otp",
+  validateRequest(AuthValidation.verifyOtpValidationSchema),
+  AuthController.verifyResetOtp,
+);
+
+router.post(
+  "/reset-password",
+  rateLimiter({
+    keyPrefix: "reset-password",
+    maxRequests: 5,
+    windowSeconds: 60 * 15,
+    message: "Too many reset attempts. Please wait 15 minutes.",
+  }),
+  validateRequest(AuthValidation.resetPasswordValidationSchema),
+  AuthController.resetPassword,
+);
+
+// Authenticated user password change
+router.post(
+  "/change-password",
+  auth(),
+  validateRequest(AuthValidation.changePasswordValidationSchema),
+  AuthController.changePassword,
+);
 
 export const AuthRoutes = router;
 export default AuthRoutes;

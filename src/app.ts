@@ -1,3 +1,4 @@
+import path from "path";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Application, type Request, type Response } from "express";
@@ -10,8 +11,13 @@ import applicationRoutes from "./routes/index.js";
 
 const app: Application = express();
 
-// Security middlewares
-app.use(helmet());
+// Security middlewares with cross-origin resource policy for HD uploaded avatars
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
+
 app.use(
   cors({
     origin: [config.frontend_url, "http://localhost:3000", "http://localhost:5173"],
@@ -25,6 +31,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Static file serving for uploaded avatars/images
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Root health check endpoint
 app.get("/", (_req: Request, res: Response) => {

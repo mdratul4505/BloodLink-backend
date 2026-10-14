@@ -29,15 +29,25 @@
           "name": "POST Register User",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\",\n  \"phone\": \"01711223344\",\n  \"isDonor\": true,\n  \"bloodGroup\": \"O_POSITIVE\",\n  \"district\": \"Dhaka\",\n  \"upazila\": \"Dhanmondi\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
             }
           }
         },
@@ -58,15 +68,25 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -87,15 +107,25 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@bloodlink.org\",\n  \"password\": \"Admin@123456\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -103,15 +133,25 @@
           "name": "POST Google Login",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"googleId\": \"google_oauth_123456\",\n  \"email\": \"googleuser@example.com\",\n  \"name\": \"Google User\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/google",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "google"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
             }
           }
         },
@@ -119,15 +159,25 @@
           "name": "POST Refresh Token",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/refresh-token",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "refresh-token"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh-token"
+              ]
             }
           }
         },
@@ -136,12 +186,128 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Forgot Password (Request OTP via Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Verify Reset OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-otp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Reset Password (Submit OTP + New Password)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewSecurePassword@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Change Password (Logged In User)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"Password123\",\n  \"newPassword\": \"NewSecurePassword@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
             }
           }
         }
@@ -155,12 +321,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/users/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
             }
           }
         },
@@ -169,8 +343,14 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -178,8 +358,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/users/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
             }
           }
         },
@@ -188,8 +373,14 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -197,8 +388,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/donors/me/availability",
-              "host": ["{{baseUrl}}"],
-              "path": ["donors", "me", "availability"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "donors",
+                "me",
+                "availability"
+              ]
             }
           }
         },
@@ -208,14 +405,33 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/donors?bloodGroup=O_POSITIVE&district=Dhaka&isAvailable=true&page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["donors"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "donors"
+              ],
               "query": [
-                { "key": "bloodGroup", "value": "O_POSITIVE" },
-                { "key": "district", "value": "Dhaka" },
-                { "key": "isAvailable", "value": "true" },
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "bloodGroup",
+                  "value": "O_POSITIVE"
+                },
+                {
+                  "key": "district",
+                  "value": "Dhaka"
+                },
+                {
+                  "key": "isAvailable",
+                  "value": "true"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             }
           }
@@ -226,9 +442,73 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/donors/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["donors", ":id"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "donors",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Upload HD Profile Picture (Avatar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "description": "Upload any high-definition / HD image file (.jpg, .jpeg, .png, .webp)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "avatar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET My Profile (Alias /users/profile)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ]
             }
           }
         }
@@ -242,8 +522,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -251,8 +537,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/blood-requests",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests"
+              ]
             }
           }
         },
@@ -262,13 +552,29 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/blood-requests?status=OPEN&bloodGroup=O_POSITIVE&page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests"
+              ],
               "query": [
-                { "key": "status", "value": "OPEN" },
-                { "key": "bloodGroup", "value": "O_POSITIVE" },
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "status",
+                  "value": "OPEN"
+                },
+                {
+                  "key": "bloodGroup",
+                  "value": "O_POSITIVE"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             }
           }
@@ -278,12 +584,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/blood-requests/my-requests",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests", "my-requests"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests",
+                "my-requests"
+              ]
             }
           }
         },
@@ -293,9 +607,19 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/blood-requests/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests", ":id"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         },
@@ -304,8 +628,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -313,9 +643,20 @@
             },
             "url": {
               "raw": "{{baseUrl}}/blood-requests/:id/respond",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests", ":id", "respond"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests",
+                ":id",
+                "respond"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         },
@@ -324,13 +665,27 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/blood-requests/:id/responses",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests", ":id", "responses"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests",
+                ":id",
+                "responses"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         },
@@ -339,8 +694,14 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -348,9 +709,20 @@
             },
             "url": {
               "raw": "{{baseUrl}}/blood-requests/:id/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests", ":id", "status"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         },
@@ -359,8 +731,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -368,9 +746,20 @@
             },
             "url": {
               "raw": "{{baseUrl}}/blood-requests/:id/complete-donation",
-              "host": ["{{baseUrl}}"],
-              "path": ["blood-requests", ":id", "complete-donation"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blood-requests",
+                ":id",
+                "complete-donation"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         }
@@ -384,8 +773,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -393,8 +788,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/organizations",
-              "host": ["{{baseUrl}}"],
-              "path": ["organizations"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ]
             }
           }
         },
@@ -404,10 +803,17 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/organizations?verificationStatus=APPROVED",
-              "host": ["{{baseUrl}}"],
-              "path": ["organizations"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ],
               "query": [
-                { "key": "verificationStatus", "value": "APPROVED" }
+                {
+                  "key": "verificationStatus",
+                  "value": "APPROVED"
+                }
               ]
             }
           }
@@ -417,8 +823,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -426,8 +838,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/camps",
-              "host": ["{{baseUrl}}"],
-              "path": ["camps"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "camps"
+              ]
             }
           }
         },
@@ -437,9 +853,18 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/camps?status=UPCOMING",
-              "host": ["{{baseUrl}}"],
-              "path": ["camps"],
-              "query": [{ "key": "status", "value": "UPCOMING" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "camps"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "UPCOMING"
+                }
+              ]
             }
           }
         },
@@ -448,13 +873,27 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/camps/:id/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["camps", ":id", "register"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "camps",
+                ":id",
+                "register"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         }
@@ -468,12 +907,19 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/notifications",
-              "host": ["{{baseUrl}}"],
-              "path": ["notifications"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ]
             }
           }
         },
@@ -482,13 +928,27 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/notifications/:id/read",
-              "host": ["{{baseUrl}}"],
-              "path": ["notifications", ":id", "read"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                ":id",
+                "read"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         },
@@ -497,12 +957,20 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/notifications/read-all",
-              "host": ["{{baseUrl}}"],
-              "path": ["notifications", "read-all"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ]
             }
           }
         }
@@ -516,8 +984,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -525,8 +999,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/payments/bkash/create",
-              "host": ["{{baseUrl}}"],
-              "path": ["payments", "bkash", "create"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "bkash",
+                "create"
+              ]
             }
           }
         },
@@ -536,11 +1016,23 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/payments/bkash/callback?paymentID=BKASH_PID_12345&status=success",
-              "host": ["{{baseUrl}}"],
-              "path": ["payments", "bkash", "callback"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "bkash",
+                "callback"
+              ],
               "query": [
-                { "key": "paymentID", "value": "BKASH_PID_12345" },
-                { "key": "status", "value": "success" }
+                {
+                  "key": "paymentID",
+                  "value": "BKASH_PID_12345"
+                },
+                {
+                  "key": "status",
+                  "value": "success"
+                }
               ]
             }
           }
@@ -550,12 +1042,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/payments/my",
-              "host": ["{{baseUrl}}"],
-              "path": ["payments", "my"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "my"
+              ]
             }
           }
         },
@@ -564,13 +1064,26 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/payments/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["payments", ":id"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         }
@@ -584,15 +1097,29 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/admin/users?role=USER&status=ACTIVE",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "users"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
               "query": [
-                { "key": "role", "value": "USER" },
-                { "key": "status", "value": "ACTIVE" }
+                {
+                  "key": "role",
+                  "value": "USER"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                }
               ]
             }
           }
@@ -602,8 +1129,14 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -611,9 +1144,21 @@
             },
             "url": {
               "raw": "{{baseUrl}}/admin/users/:id/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "users", ":id", "status"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         },
@@ -622,8 +1167,14 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -631,9 +1182,21 @@
             },
             "url": {
               "raw": "{{baseUrl}}/admin/organizations/:id/verify",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "organizations", ":id", "verify"],
-              "variable": [{ "key": "id", "value": "" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "organizations",
+                ":id",
+                "verify"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
             }
           }
         },
@@ -642,12 +1205,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/admin/dashboard-stats",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "dashboard-stats"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "dashboard-stats"
+              ]
             }
           }
         },
@@ -656,12 +1227,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/admin/audit-logs",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "audit-logs"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "audit-logs"
+              ]
             }
           }
         },
@@ -670,12 +1249,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/admin/payments",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "payments"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "payments"
+              ]
             }
           }
         }

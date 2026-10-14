@@ -98,12 +98,61 @@ export const logout = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+export const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.forgotPassword(req.body.email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
+export const verifyResetOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.verifyResetOtp(req.body.email, req.body.otp);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
+export const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.resetPassword(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
+export const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.id;
+  const result = await AuthService.changePassword(userId, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
 export const AuthController = {
   register,
   login,
   googleAuth,
   refreshToken,
   logout,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword,
+  changePassword,
 };
 
 export default AuthController;
