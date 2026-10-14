@@ -204,7 +204,7 @@
           }
         },
         {
-          "name": "POST Forgot Password (Request OTP via Email)",
+          "name": "POST Forgot Password (Step 1: Enter Email to Receive OTP)",
           "request": {
             "method": "POST",
             "header": [
@@ -256,7 +256,7 @@
           }
         },
         {
-          "name": "POST Reset Password (Submit OTP + New Password)",
+          "name": "POST Reset Password (Step 2: Submit Email + OTP + New Password)",
           "request": {
             "method": "POST",
             "header": [
@@ -267,7 +267,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewSecurePassword@123\"\n}"
+              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"BrandNewPassword@123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/reset-password",
@@ -282,10 +282,14 @@
           }
         },
         {
-          "name": "POST Change Password (Email + OTP + NewPassword - No Old Password Needed)",
+          "name": "POST Change Password (Logged In User - Old Password + New Password)",
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -293,7 +297,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"dev.ratul.coder@gmail.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"MyNewPassword@123\"\n}"
+              "raw": "{\n  \"oldPassword\": \"Password@123\",\n  \"newPassword\": \"NewPassword@123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/change-password",

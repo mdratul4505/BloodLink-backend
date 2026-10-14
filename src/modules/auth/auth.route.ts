@@ -1,5 +1,5 @@
 import { Router } from "express";
-import auth, { optionalAuth } from "../../middlewares/auth.js";
+import auth from "../../middlewares/auth.js";
 import rateLimiter from "../../middlewares/rateLimit.js";
 import validateRequest from "../../middlewares/validate.js";
 import AuthController from "./auth.controller.js";
@@ -82,10 +82,10 @@ router.post(
   AuthController.resetPassword,
 );
 
-// Password change endpoint (Works with email + OTP + newPassword; NO oldPassword needed!)
+// Authenticated user password change (requires oldPassword and newPassword)
 router.post(
   "/change-password",
-  optionalAuth,
+  auth(),
   validateRequest(AuthValidation.changePasswordValidationSchema),
   AuthController.changePassword,
 );
