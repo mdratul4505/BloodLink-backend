@@ -32,13 +32,27 @@ export const loginValidationSchema = z.object({
 });
 
 export const googleAuthValidationSchema = z.object({
-  body: z.object({
-    idToken: z.string().optional(),
-    googleId: z.string().min(1, "Google ID is required"),
-    email: z.string().email("Invalid email address"),
-    name: z.string().min(1, "Name is required"),
-    avatar: z.string().optional(),
-  }),
+  body: z
+    .object({
+      idToken: z.string().optional(),
+      credential: z.string().optional(),
+      token: z.string().optional(),
+      googleId: z.string().optional(),
+      email: z.string().email("Invalid email address").optional(),
+      name: z.string().optional(),
+      avatar: z.string().optional(),
+    })
+    .refine(
+      (data) =>
+        (data.googleId && data.email) ||
+        data.idToken ||
+        data.credential ||
+        data.token,
+      {
+        message:
+          "Google authentication requires either (googleId and email) or a valid Google (idToken / credential).",
+      },
+    ),
 });
 
 export const refreshTokenValidationSchema = z.object({

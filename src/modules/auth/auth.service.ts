@@ -1,3 +1,4 @@
+import axios from "axios";
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import config from "../../config/index.js";
@@ -157,18 +158,56 @@ export const loginUser = async (
   };
 };
 
-export const googleLogin = async (
-  payload: {
-    googleId: string;
-    email: string;
-    name: string;
-    avatar?: string;
-  },
-  clientIp?: string,
-) => {
+export const googleLogin = async (payload: {
+  idToken?: string;
+  credential?: string;
+  token?: string;
+  googleId?: string;
+  email?: string;
+  name?: string;
+  avatar?: string;
+}) => {
+  let googleId = payload.googleId;
+  let email = payload.email;
+  let name = payload.name;
+  let avatar = payload.avatar;
+
+  const rawToken = payload.idToken || payload.credential || payload.token;
+
+  // If Google ID token is provided, verify it directly against Google OAuth2 tokeninfo API
+  if (rawToken && (!googleId || !email)) {
+    try {
+      const response = await axios.get(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${rawToken}`,
+      );
+      if (response.data) {
+        googleId = response.data.sub;
+        email = response.data.email;
+        name = name || response.data.name || response.data.given_name || "Google User";
+        avatar = avatar || response.data.picture;
+      }
+    } catch (err: any) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        "Invalid or expired Google OAuth token: " +
+          (err?.response?.data?.error_description || err?.message || "Token verification failed"),
+      );
+    }
+  }
+
+  if (!googleId || !email) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Google login requires either valid googleId and email, or a valid Google idToken / credential.",
+    );
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const userName = name || "Google User";
+
   let user = await prisma.user.findFirst({
     where: {
-      OR: [{ googleId: payload.googleId }, { email: payload.email.toLowerCase() }],
+      OR: [{ googleId }, { email: normalizedEmail }],
     },
     include: {
       donorProfile: true,
@@ -185,7 +224,7 @@ export const googleLogin = async (
     if (!user.googleId) {
       user = await prisma.user.update({
         where: { id: user.id },
-        data: { googleId: payload.googleId, avatar: payload.avatar || user.avatar },
+        data: { googleId, avatar: avatar || user.avatar },
         include: { donorProfile: true },
       });
     }
@@ -193,10 +232,10 @@ export const googleLogin = async (
     // New user via Google OAuth -> always role: USER
     user = await prisma.user.create({
       data: {
-        name: payload.name,
-        email: payload.email.toLowerCase(),
-        googleId: payload.googleId,
-        avatar: payload.avatar,
+        name: userName,
+        email: normalizedEmail,
+        googleId,
+        avatar,
         role: "USER",
         status: "ACTIVE",
         isVerified: true,
