@@ -1184,8 +1184,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 500,\n  \"purpose\": \"PLATFORM_SUPPORT\",\n  \"payerReference\": \"Voluntary Donation\"\n}"
+              "raw": "{\n  \"amount\": 350,\n  \"purpose\": \"PLATFORM_SUPPORT\",\n  \"payerReference\": \"01877722345\"\n}"
             },
+
             "url": {
               "raw": "{{baseUrl}}/payments/bkash/create",
               "host": [
