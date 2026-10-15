@@ -1,269 +1,312 @@
 # 🩸 BloodLink - Automated Blood Donation & Emergency Coordination Backend
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Production%20Status-Live%20on%20Vercel-success?style=for-the-badge&logo=vercel" alt="Vercel Live" />
   <img src="https://img.shields.io/badge/Node.js-20+-68a063?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Express-5.x-black?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
   <img src="https://img.shields.io/badge/Prisma-7.10-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" />
   <img src="https://img.shields.io/badge/PostgreSQL-16+-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Redis-6.x-dc382d?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/bKash-PGW%20v1.2-e2136e?style=for-the-badge" alt="bKash" />
   <img src="https://img.shields.io/badge/Nodemailer-Gmail%20SMTP-ea4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Gmail SMTP" />
 </p>
 
-BloodLink is an enterprise-grade backend system designed to bridge the gap between voluntary blood donors and emergency requesters. Built with **Express 5**, **TypeScript**, **Prisma ORM 7**, **PostgreSQL**, **Redis**, **Nodemailer (Gmail SMTP)**, and **bKash Tokenized Checkout**, BloodLink streamlines real-time blood request coordination, automated notification dispatch, secure OTP-based password resets, profile management with HD picture upload, and transparent donation camp tracking.
+---
+
+## 🌐 Live Deployment & Base URLs
+
+| Resource | URL |
+|---|---|
+| **Live API Base URL (Vercel)** | `https://blood-link-backend-one.vercel.app/api/v1` |
+| **Server Health Check** | `https://blood-link-backend-one.vercel.app/health` |
+| **GitHub Repository** | `https://github.com/mdratul4505/BloodLink-backend.git` |
+| **Local Development URL** | `http://localhost:5000/api/v1` |
 
 ---
 
-## 🌟 Key Highlights & System Features
+## 🔑 Default Administrator Credentials
 
-### 1. 🔐 Security & Email Notification System
-- **Registration Welcome Email**: Automatically delivers an attractive, responsive HTML onboarding email when a new user registers.
-- **Forgot Password & OTP Verification**:
-  - Secure **6-digit numeric OTP** generation with **10-minute expiration**.
-  - OTP stored in **Redis** (or ultra-fast memory fallback) with automatic TTL cleanup.
-  - Verification check endpoint before password submission.
-- **Password Changed Confirmation**: Instant security confirmation email sent to the user when their password is changed, alerting them of the activity.
-- **Strict Role-Based Access Control (RBAC)**:
-  - `USER`: Normal donor and recipient privileges.
-  - `ORGANIZATION`: Hospitals, blood banks, and verified voluntary clubs.
-  - `ADMIN` & `SUPER_ADMIN`: Administrative controls, suspension, and verification workflows.
+Use these seeded admin credentials to test protected administrative endpoints (User suspension, Organization approval, Audit logs, and Payment histories):
 
-### 2. 👤 Universal Profile & HD Picture Upload
-- **Profile for Everyone**: Any authenticated user can view (`GET /api/v1/users/me` or `/users/profile`) and update their profile details.
-- **Optional HD Avatar Upload**:
-  - Uploading a profile picture is **100% optional**; users can update basic information with or without uploading images.
-  - Supports high-definition / HD images up to **15MB** (`.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`) without compression loss.
-  - Static file delivery with cross-origin resource policy enabled at `/uploads/avatars/...`.
-
-### 3. ⚡ Resilient Redis Caching & In-Memory Fallback
-- Dual-mode caching: Connects via `REDIS_URL` or `REDIS_HOST` + `REDIS_PORT` + `REDIS_PASSWORD`.
-- **Zero-downtime Fallback**: If Redis is offline or credentials need updating, the backend automatically falls back to an internal in-memory store so OTPs, rate-limiting, and query caches continue working seamlessly without crashing.
-
-### 4. 🩸 Emergency Coordination & Atomic `$transaction`
-- **Atomic Donation Execution**: Simultaneously marks `Donation` records, updates `DonorResponse` to `DONATED`, recalculates required blood units, updates `BloodRequest` status (`PARTIALLY_FULFILLED` / `FULFILLED`), and logs donor statistics.
-- **Automated Expiration Cron**: Background scheduler automatically expires overdue emergency requests.
-
-### 5. 💳 bKash Tokenized Checkout (v1.2.0-beta)
-- Voluntary platform contributions and emergency fundraising.
-- Token caching in Redis with TTL.
-- Idempotent callback webhook verifying transaction amounts via `execute` and `query` APIs before marking status `PAID`.
+| Role | Email | Password |
+|---|---|---|
+| **SUPER ADMIN / ADMIN** | `admin@bloodlink.org` | `Admin@123456` |
 
 ---
 
-## 🗄️ Database Architecture (Prisma Multi-File Schema)
+## 📖 Project Overview
 
-```
-User ───────────────┬─< DonorProfile (1:1)
-                    ├─< Organization (Owner 1:M)
-                    ├─< OrganizationMember (M:N)
-                    ├─< BloodRequest (Requester 1:M)
-                    ├─< DonorResponse (1:M)
-                    ├─< Donation (1:M)
-                    ├─< CampRegistration (M:N)
-                    ├─< Notification (1:M)
-                    ├─< Payment (1:M)
-                    └─< AuditLog (1:M)
+**BloodLink** is an enterprise-grade backend infrastructure designed to bridge the gap between voluntary blood donors, emergency patients, hospitals, and voluntary blood donation organizations. Built with **Express 5**, **TypeScript**, **Prisma ORM 7**, **PostgreSQL**, **Redis**, **Nodemailer (Gmail SMTP)**, and **bKash Tokenized Checkout**, BloodLink streamlines:
 
-BloodRequest ───────┬─< DonorResponse (@@unique([requestId, donorId]))
-                    ├─< Donation (1:M)
-                    └─< Notification (1:M)
-
-Organization ───────┬─< DonationCamp (1:M)
-                    └─< OrganizationMember (1:M)
-
-DonationCamp ───────┬─< CampRegistration (@@unique([campId, userId]))
-                    └─< Donation (1:M)
-```
+1. **Life-Saving Emergency Matching**: Instant notification broadcast to nearby eligible donors matching blood group and geographical proximity (District & Upazila).
+2. **OTP-Verified Onboarding**: Safe registration with 6-digit email OTP verification preventing bots and fake accounts.
+3. **Dual JWT Authentication**: Short-lived Access Token (1 Day) paired with secure Refresh Token (7 Days) and token blacklisting on logout.
+4. **Transparent Organization Verification**: Multi-step verification workflow for blood banks and hospitals with flexible status transitions (`APPROVED`, `ACCEPT`, `EXCEPT`, `REJECTED`).
+5. **Atomic Donation Management**: Prisma `$transaction` ensures that completing a donation atomically updates donor response, decrements required units, recalculates requester blood status, and logs donor eligibility.
+6. **Integrated bKash Payment Gateway**: Enables voluntary donor contributions and emergency fund collection with webhook callbacks, signature checks, amount validation, and idempotency protection.
 
 ---
 
-## 🚀 API Endpoint Reference (40+ Endpoints)
+## 🌟 Core Features & Modules
 
-### 1. Authentication & Password Security
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `POST` | `/api/v1/auth/register` | Register new user (Sends Welcome Email) | No |
-| `POST` | `/api/v1/auth/login` | Login with email/password (JWT + Refresh Token) | No (Rate-limited) |
-| `POST` | `/api/v1/auth/google` | Google OAuth registration / login | No |
-| `POST` | `/api/v1/auth/refresh-token` | Generate fresh access token from refresh token | No |
-| `POST` | `/api/v1/auth/logout` | Invalidate session & blacklist JWT | Yes |
-| `POST` | `/api/v1/auth/forgot-password` | Request 6-digit OTP sent to registered email | No (Rate-limited) |
-| `POST` | `/api/v1/auth/verify-otp` | Verify 6-digit OTP code validity | No |
-| `POST` | `/api/v1/auth/reset-password` | Reset password with verified OTP (Sends Confirmation Email) | No (Rate-limited) |
-| `POST` | `/api/v1/auth/change-password` | Change password for logged-in user (Sends Confirmation Email) | Yes |
+### 1. 🔐 Security & Email OTP Verification
+- **Registration OTP**: When registering with email, a 6-digit numeric OTP is dispatched via Nodemailer Gmail SMTP (10-minute expiry). The account remains inactive until OTP verification (`POST /api/v1/auth/verify-email`).
+- **Resend OTP**: Users can request a fresh OTP if they haven't received it (`POST /api/v1/auth/resend-verification-otp`).
+- **Dual JWT Tokens**: Login returns `accessToken` (1d validity) and `refreshToken` (7d validity).
+- **Forgot Password**: OTP-based password reset cycle (`forgot-password` -> `verify-otp` -> `reset-password`) with automated confirmation emails.
+- **Role-Based Access Control (RBAC)**: Enforced via `auth("ADMIN", "ORGANIZATION", "USER")` middleware.
 
-### 2. User & Profile Management
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `GET` | `/api/v1/users/me` | Fetch logged-in user profile, donor details & stats | Yes |
-| `GET` | `/api/v1/users/profile` | Alias for user profile retrieval | Yes |
-| `PATCH` | `/api/v1/users/me` | Update profile info (optional image/multipart supported) | Yes |
-| `PATCH` | `/api/v1/users/profile` | Alias for profile update | Yes |
-| `POST` | `/api/v1/users/avatar` | Upload HD profile picture / avatar file (up to 15MB) | Yes |
-| `POST` | `/api/v1/users/me/avatar` | Alias for avatar upload | Yes |
-| `PATCH` | `/api/v1/users/availability`| Toggle donor availability switch | Yes |
+### 2. 🩸 Blood Request & Atomic Donation
+- **Nearby Donor Alert**: Creating a request automatically filters matching blood groups and locations, dispatching in-app alerts and notifications.
+- **Donor Responses**: Donors can mark their willingness (`AVAILABLE` / `UNABLE`).
+- **Atomic `$transaction` Execution**: When the requester completes a donation, Prisma atomically:
+  - Records the donation in `Donation` table.
+  - Updates `DonorResponse` status to `DONATED`.
+  - Recalculates remaining blood units needed.
+  - Updates `BloodRequest` status to `PARTIALLY_FULFILLED` or `FULFILLED`.
+  - Updates donor profile last donated date and donor badge count.
 
-### 3. Donors & Search
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `GET` | `/api/v1/donors` | Filter donors by blood group, district, availability | No (Redis Cached) |
-| `GET` | `/api/v1/donors/:id` | Fetch specific donor profile and reviews | No |
+### 3. 🏢 Organization Management & Verification
+- Organizations submit license and registration credentials.
+- System Admin verifies or rejects applications (`PATCH /api/v1/admin/organizations/:id/verify`).
+- Lenient API design accepts `"APPROVED"`, `"ACCEPT"`, `"EXCEPT"`, or `"AXCEPT"`, mapping them reliably to the canonical `APPROVED` state.
 
-### 4. Emergency Blood Requests
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `POST` | `/api/v1/blood-requests` | Create emergency blood request & alert nearby donors | Yes |
-| `GET` | `/api/v1/blood-requests` | List requests with blood group & location filters | No |
-| `GET` | `/api/v1/blood-requests/my-requests` | List all requests submitted by logged-in user | Yes |
-| `GET` | `/api/v1/blood-requests/:id` | View blood request detail and responses | No |
-| `PATCH` | `/api/v1/blood-requests/:id` | Update blood request details | Yes (Creator/Admin) |
-| `DELETE`| `/api/v1/blood-requests/:id` | Cancel / soft-delete request | Yes (Creator/Admin) |
-| `POST` | `/api/v1/blood-requests/:id/respond` | Submit donor response (`AVAILABLE` / `UNABLE`) | Yes (Donor) |
-| `GET` | `/api/v1/blood-requests/:id/responses`| View list of donor responses | Yes (Creator/Admin) |
-| `PATCH` | `/api/v1/blood-requests/:id/status` | Update request status | Yes (Creator/Admin) |
-| `POST` | `/api/v1/blood-requests/:id/complete-donation` | Complete atomic donation transaction | Yes (Creator/Admin) |
+### 4. 💳 bKash Payment Gateway (Voluntary Platform Support)
+- Built on bKash Tokenized Checkout API (v1.2.0-beta).
+- **Session Creation**: Generates unique merchant invoice number, grants token, caches token in Redis with TTL, and stores `PENDING` payment with audit event.
+- **Callback & Verification**: Validates `status`, executes payment session, calls bKash Query API to verify paid amount against database record, updates status to `PAID`, records `trxId`, and emits `VERIFIED` audit log.
+- **Idempotency Protection**: Repeated callback calls safely return existing paid status without double execution or errors.
+- **Fallback Simulation**: If live sandbox credentials are being set up, a simulated mock payment session runs out of the box so end-to-end flows never fail.
 
-### 5. Organizations & Verification
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `POST` | `/api/v1/organizations` | Submit organization verification application | Yes |
-| `GET` | `/api/v1/organizations` | List verified/all organizations | No |
-| `GET` | `/api/v1/organizations/:id` | View organization profile, camps, and history | No |
-| `PATCH` | `/api/v1/organizations/:id` | Update organization details | Yes (Org Owner) |
-
-### 6. Donation Camps
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `POST` | `/api/v1/camps` | Create donation camp | Yes (Verified Org/Admin) |
-| `GET` | `/api/v1/camps` | List upcoming and ongoing donation camps | No |
-| `GET` | `/api/v1/camps/:id` | View camp details and registrations | No |
-| `POST` | `/api/v1/camps/:id/register` | Register as voluntary donor for camp | Yes |
-| `PATCH` | `/api/v1/camps/:id/status` | Update camp status (`UPCOMING`, `ONGOING`, `COMPLETED`)| Yes (Org/Admin) |
-
-### 7. Notifications
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `GET` | `/api/v1/notifications` | Fetch user's in-app notifications | Yes |
-| `PATCH` | `/api/v1/notifications/:id/read` | Mark individual notification as read | Yes |
-| `PATCH` | `/api/v1/notifications/read-all` | Mark all notifications as read | Yes |
-
-### 8. bKash Payments (Voluntary Support)
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `POST` | `/api/v1/payments/bkash/create` | Initiate bKash payment checkout session | Yes |
-| `GET` | `/api/v1/payments/bkash/callback` | bKash webhook callback (Verify & Execute) | No (Gateway) |
-| `GET` | `/api/v1/payments/my` | View user payment contribution history | Yes |
-| `GET` | `/api/v1/payments/:id` | View payment transaction details & event log | Yes |
-
-### 9. Administration Module
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `GET` | `/api/v1/admin/users` | List and search all users with filters | Yes (ADMIN) |
-| `PATCH` | `/api/v1/admin/users/:id/status` | Suspend or reactivate user account | Yes (ADMIN) |
-| `PATCH` | `/api/v1/admin/organizations/:id/verify` | Approve or reject organization application | Yes (ADMIN) |
-| `GET` | `/api/v1/admin/dashboard-stats` | Aggregated platform metrics | Yes (ADMIN, Cached) |
-| `GET` | `/api/v1/admin/audit-logs` | Platform audit log records | Yes (ADMIN) |
-| `GET` | `/api/v1/admin/payments` | All transaction logs and audit trail | Yes (ADMIN) |
+### 5. 👤 Universal Profile & HD Picture Upload
+- Any authenticated user can view and update their profile (`GET /users/me`, `PATCH /users/me`).
+- High-definition avatar upload supporting up to 15MB (`.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`) via `POST /api/v1/users/avatar`.
+- On Vercel serverless, uploads are seamlessly handled via `/tmp/uploads` with automatic fallback.
 
 ---
 
-## 🛠️ Environment Configuration (.env)
+## 🛠️ Technology Stack
 
-```env
-NODE_ENV=development
-PORT=5000
+| Technology | Purpose |
+|---|---|
+| **Node.js 20+** | JavaScript runtime |
+| **TypeScript 5.x** | Strongly typed backend development |
+| **Express 5.x** | High performance REST API framework |
+| **Prisma ORM 7.10** | Database ORM with multi-file schema architecture |
+| **PostgreSQL 16** | Relational primary database |
+| **Redis 6+** | In-memory cache for OTPs, rate-limiting, and tokens |
+| **Nodemailer** | Gmail SMTP transactional email provider |
+| **bKash PGW API** | Tokenized payment checkout gateway |
+| **Zod** | Runtime schema validation |
+| **Tsup** | Ultra-fast TypeScript bundler |
+| **Vercel Serverless** | Global production deployment |
 
-# PostgreSQL Connection String
-DATABASE_URL="postgresql://username:password@localhost:5432/bloodlink?schema=public"
+---
 
-# JWT Authentication
-JWT_ACCESS_SECRET=your_super_secret_access_key
-JWT_REFRESH_SECRET=your_super_secret_refresh_key
-JWT_ACCESS_EXPIRES_IN=1d
-JWT_REFRESH_EXPIRES_IN=7d
-BCRYPT_SALT_ROUNDS=10
+## 💳 How to Test bKash Payment in Postman
 
-# URLs
-BACKEND_URL=http://localhost:5000
-FRONTEND_URL=http://localhost:3000
+We have fully automated the bKash payment verification flow in our Postman Collection. Follow these 4 easy steps:
 
-# Seed Super Admin Credentials
-ADMIN_NAME="BloodLink Super Admin"
-ADMIN_EMAIL=admin@bloodlink.org
-ADMIN_PASSWORD=Admin@123456
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User / Postman
+    participant API as BloodLink API
+    participant PGW as bKash Gateway
+    participant DB as PostgreSQL DB
 
-# Redis (Supports direct REDIS_URL or Host/Port/Password)
-REDIS_URL=redis://default:your_redis_password@your_redis_host:16770
-REDIS_HOST=your_redis_host
-REDIS_PORT=16770
-REDIS_USER=default
-REDIS_PASSWORD=your_redis_password
+    User->>API: POST /api/v1/payments/bkash/create (Amount: 500)
+    API->>DB: Create PENDING payment & CREATE Event
+    API->>PGW: Initialize checkout session
+    PGW-->>API: Returns bkashPaymentId & bkashURL
+    API-->>User: 201 Created (Auto-stores bkashPaymentId in Postman)
 
-# Gmail SMTP Email Service
-SMTP_USER=dev.ratul.coder@gmail.com
-SMTP_PASSWORD=your_gmail_app_password
+    User->>API: GET /api/v1/payments/bkash/callback?paymentID={{bkashPaymentId}}&status=success
+    API->>PGW: Execute & Query Payment Session
+    API->>DB: Atomic Update: status = PAID, trxId, paidAt, VERIFIED Event
+    API-->>User: 200 OK (Payment marked PAID)
 
-# bKash Sandbox Credentials
-BKASH_APP_KEY=sandbox_app_key
-BKASH_APP_SECRET=sandbox_app_secret
-BKASH_USERNAME=sandbox_username
-BKASH_PASSWORD=sandbox_password
-BKASH_BASE_URL=https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout
-BKASH_CALLBACK_URL=http://localhost:5000/api/v1/payments/bkash/callback
+    User->>API: GET /api/v1/payments/my
+    API-->>User: Returns list of completed donations with trxId
 ```
 
+### Step-by-Step Postman Instructions:
+
+1. **Step 1: Login to get Access Token**
+   - Run `POST /api/v1/auth/login` (or `POST /api/v1/auth/register`).
+   - The test script automatically saves `{{accessToken}}` to collection variables.
+
+2. **Step 2: Create Payment Session**
+   - Open folder `6. bKash Payment (Voluntary Support)` -> `POST Create bKash Payment`.
+   - Body:
+     ```json
+     {
+       "amount": 500,
+       "purpose": "PLATFORM_SUPPORT",
+       "payerReference": "Voluntary Donation"
+     }
+     ```
+   - Click **Send**.
+   - Postman's test script **automatically captures `bkashPaymentId` and `paymentId`** into your Postman variables!
+
+3. **Step 3: Execute Payment Callback**
+   - Click request `GET bKash Callback (Executed by Gateway)`.
+   - The URL is pre-filled: `{{baseUrl}}/payments/bkash/callback?paymentID={{bkashPaymentId}}&status=success&format=json`
+   - Click **Send**.
+   - **Response Output**:
+     ```json
+     {
+       "success": true,
+       "message": "bKash payment callback processed successfully",
+       "data": {
+         "payment": {
+           "status": "PAID",
+           "amount": "500",
+           "trxId": "TRX_1792087593976_Z8A4I",
+           "paidAt": "2026-10-15T18:06:34.029Z"
+         }
+       }
+     }
+     ```
+
+4. **Step 4: Verify in My Payments**
+   - Click `GET My Payments` (`{{baseUrl}}/payments/my`).
+   - Click **Send** to see your completed transaction with transaction ID and timestamp.
+
 ---
 
-## 💻 Getting Started
+## 📋 Comprehensive API Endpoints (40+ Endpoints)
 
-### 1. Clone the repository
+### 1. Authentication & Security (`/api/v1/auth`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `POST` | `/auth/register` | Register new user (Sends 6-digit OTP email) | Public |
+| `POST` | `/auth/verify-email` | Verify email OTP to activate account | Public |
+| `POST` | `/auth/resend-verification-otp` | Resend registration OTP email | Public |
+| `POST` | `/auth/login` | Login (Returns `accessToken` + `refreshToken`) | Public |
+| `POST` | `/auth/google` | Google OAuth registration / login | Public |
+| `POST` | `/auth/refresh-token` | Generate fresh access token from refresh token | Public |
+| `POST` | `/auth/logout` | Invalidate session & blacklist token | Authenticated |
+| `POST` | `/auth/forgot-password` | Send password reset OTP | Public |
+| `POST` | `/auth/verify-otp` | Verify password reset OTP | Public |
+| `POST` | `/auth/reset-password` | Reset password using verified OTP | Public |
+| `POST` | `/auth/change-password` | Change password for logged-in user | Authenticated |
+
+### 2. User & Profile (`/api/v1/users`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/users/me` | Get logged-in user profile & donor info | Authenticated |
+| `PATCH` | `/users/me` | Update profile information | Authenticated |
+| `POST` | `/users/avatar` | Upload HD profile picture (up to 15MB) | Authenticated |
+| `PATCH` | `/users/availability`| Toggle blood donor availability status | Authenticated |
+
+### 3. Donors Directory (`/api/v1/donors`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/donors` | Filter donors by blood group, district, upazila | Public (Cached) |
+| `GET` | `/donors/:id` | Fetch specific donor profile and stats | Public |
+
+### 4. Emergency Blood Requests (`/api/v1/blood-requests`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `POST` | `/blood-requests` | Create emergency blood request & alert donors | Authenticated |
+| `GET` | `/blood-requests` | Filter requests by blood group, status, location | Public |
+| `GET` | `/blood-requests/my-requests` | List user's created blood requests | Authenticated |
+| `GET` | `/blood-requests/:id` | View request details and donor responses | Public |
+| `PATCH` | `/blood-requests/:id` | Update blood request details | Creator / Admin |
+| `DELETE`| `/blood-requests/:id` | Cancel emergency blood request | Creator / Admin |
+| `POST` | `/blood-requests/:id/respond` | Respond as donor (`AVAILABLE` / `UNABLE`) | Donor |
+| `GET` | `/blood-requests/:id/responses`| View all responses submitted for request | Creator / Admin |
+| `POST` | `/blood-requests/:id/complete-donation` | Atomic donation completion transaction | Creator / Admin |
+
+### 5. Organizations (`/api/v1/organizations`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `POST` | `/organizations` | Apply for organization registration | Authenticated |
+| `GET` | `/organizations` | List verified organizations | Public |
+| `GET` | `/organizations/:id` | View organization profile and donation camps | Public |
+| `PATCH` | `/organizations/:id` | Update organization profile details | Org Owner / Admin |
+
+### 6. Donation Camps (`/api/v1/camps`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `POST` | `/camps` | Create new donation camp | Org / Admin |
+| `GET` | `/camps` | List upcoming and ongoing donation camps | Public |
+| `GET` | `/camps/:id` | View camp details and registrations | Public |
+| `POST` | `/camps/:id/register` | Register as participant in donation camp | Authenticated |
+| `PATCH` | `/camps/:id/status` | Update camp status (`UPCOMING`, `ONGOING`, `COMPLETED`)| Org / Admin |
+
+### 7. Notifications (`/api/v1/notifications`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/notifications` | Fetch user notifications | Authenticated |
+| `PATCH` | `/notifications/:id/read` | Mark individual notification as read | Authenticated |
+| `PATCH` | `/notifications/read-all` | Mark all notifications as read | Authenticated |
+
+### 8. bKash Payments (`/api/v1/payments`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `POST` | `/payments/bkash/create` | Initialize checkout payment session | Authenticated |
+| `GET` | `/payments/bkash/callback` | Gateway webhook callback (Execute & Verify) | Public (Gateway) |
+| `GET` | `/payments/my` | View logged-in user donation history | Authenticated |
+| `GET` | `/payments/:id` | View transaction details and event logs | Authenticated |
+
+### 9. Administration (`/api/v1/admin`)
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/admin/users` | List and search all users | ADMIN |
+| `PATCH` | `/admin/users/:id/status` | Suspend or reactivate user account | ADMIN |
+| `PATCH` | `/admin/organizations/:id/verify` | Verify organization (`APPROVED`, `EXCEPT`, `REJECTED`)| ADMIN |
+| `GET` | `/admin/dashboard-stats` | Aggregated metrics and system summary | ADMIN (Cached) |
+| `GET` | `/admin/audit-logs` | Platform audit logs | ADMIN |
+| `GET` | `/admin/payments` | All transactions and audit trails | ADMIN |
+
+---
+
+## 🧪 Postman Collection Setup
+
+1. Open Postman.
+2. Click **Import** (top left).
+3. Choose the [`postman_collection.json`](postman_collection.json) file located in this repository.
+4. **Pre-configured Variables**:
+   - `baseUrl`: `https://blood-link-backend-one.vercel.app/api/v1` (Default)
+   - `localBaseUrl`: `http://localhost:5000/api/v1` (For local testing)
+   - `adminEmail`: `admin@bloodlink.org`
+   - `adminPassword`: `Admin@123456`
+   - `accessToken`: (Auto-saved upon login/registration)
+   - `adminAccessToken`: (Auto-saved upon admin login)
+   - `bkashPaymentId`: (Auto-saved upon payment create)
+   - `paymentId`: (Auto-saved upon payment create)
+
+All endpoints will instantly work with the live Vercel URL out of the box!
+
+---
+
+## 🚀 Local Installation & Setup
+
 ```bash
-git clone https://github.com/programming-hero-web-course-4/b12a7-customer-support-zone-mdratul4505.git
+# 1. Clone repository
+git clone https://github.com/mdratul4505/BloodLink-backend.git
 cd BloodLink-backend
-```
 
-### 2. Install Dependencies
-```bash
+# 2. Install dependencies
 npm install
-```
 
-### 3. Generate Prisma Client
-```bash
+# 3. Generate Prisma client
 npx prisma generate
-```
 
-### 4. Push Database Schema
-```bash
+# 4. Push schema to database
 npx prisma db push
-```
 
-### 5. Start Development Server
-```bash
+# 5. Start dev server
 npm run dev
-```
 
-### 6. Build & Production Run
-```bash
+# 6. Build project
 npm run build
-npm start
 ```
-
----
-
-## 🧪 Testing with Postman
-
-1. Open Postman and click **Import**.
-2. Select the [`postman_collection.json`](postman_collection.json) file included in the root directory.
-3. The collection is pre-configured with environment variables (`{{baseUrl}}`, `{{accessToken}}`, `{{adminAccessToken}}`).
-4. **Step-by-Step Flow**:
-   1. **Register**: `POST /api/v1/auth/register` (receives welcome email).
-   2. **Login**: `POST /api/v1/auth/login` (stores token in collection variable).
-   3. **Forgot Password**: `POST /api/v1/auth/forgot-password` (sends 6-digit OTP).
-   4. **Reset Password**: `POST /api/v1/auth/reset-password` (updates password + sends confirmation email).
-   5. **Get Profile**: `GET /api/v1/users/me`.
-   6. **Upload HD Avatar**: `POST /api/v1/users/avatar` (select image in `form-data` with key `avatar`).
 
 ---
 
 ## 📄 License
-This project is open-source and available under the [ISC License](LICENSE).
+This project is licensed under the [ISC License](LICENSE).

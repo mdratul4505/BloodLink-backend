@@ -7,6 +7,11 @@
   "variable": [
     {
       "key": "baseUrl",
+      "value": "https://blood-link-backend-one.vercel.app/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "localBaseUrl",
       "value": "http://localhost:5000/api/v1",
       "type": "string"
     },
@@ -28,6 +33,26 @@
     {
       "key": "userEmail",
       "value": "dev.ratul.coder1@gmail.com",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@bloodlink.org",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Admin@123456",
+      "type": "string"
+    },
+    {
+      "key": "bkashPaymentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "paymentId",
+      "value": "",
       "type": "string"
     }
   ],
@@ -1129,6 +1154,22 @@
       "item": [
         {
           "name": "POST Create bKash Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.bkashPaymentId) {",
+                  "  pm.collectionVariables.set('bkashPaymentId', res.data.bkashPaymentId);",
+                  "}",
+                  "if (res.data && res.data.paymentId) {",
+                  "  pm.collectionVariables.set('paymentId', res.data.paymentId);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -1163,7 +1204,7 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/payments/bkash/callback?paymentID=BKASH_PID_12345&status=success",
+              "raw": "{{baseUrl}}/payments/bkash/callback?paymentID={{bkashPaymentId}}&status=success&format=json",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1175,11 +1216,15 @@
               "query": [
                 {
                   "key": "paymentID",
-                  "value": "BKASH_PID_12345"
+                  "value": "{{bkashPaymentId}}"
                 },
                 {
                   "key": "status",
                   "value": "success"
+                },
+                {
+                  "key": "format",
+                  "value": "json"
                 }
               ]
             }
@@ -1229,7 +1274,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "{{paymentId}}"
                 }
               ]
             }
