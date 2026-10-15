@@ -8,7 +8,7 @@ import type {
   IBkashQueryPaymentResponse,
 } from "./payment.interface.js";
 
-const TOKEN_CACHE_KEY = "bkash:token";
+const TOKEN_CACHE_KEY = "bkash:token:sandbox:v1";
 
 export const getBkashGrantToken = async (): Promise<string> => {
   // Check Redis cache first matching requirement: bKash token Redis-এ cache করো
@@ -54,10 +54,11 @@ export const getBkashGrantToken = async (): Promise<string> => {
     throw new Error(response.data.statusMessage || "Failed to grant bKash token");
   } catch (error: any) {
     console.error("bKash token grant error:", error.response?.data || error.message);
-    // Fallback simulation in dev/test environment
-    const mockToken = `mock_bkash_id_token_${Date.now()}`;
-    await setCache(TOKEN_CACHE_KEY, mockToken, 3500);
-    return mockToken;
+    throw new Error(
+      error.response?.data?.statusMessage ||
+        error.message ||
+        "Failed to authenticate with bKash Developer Portal API",
+    );
   }
 };
 
@@ -94,7 +95,7 @@ export const createBkashPaymentSession = async (payload: {
       `${config.bkash.base_url}/create`,
       {
         mode: "0011",
-        payerReference: payload.payerReference || "BloodLink Support",
+        payerReference: payload.payerReference || "01770618575",
         callbackURL: config.bkash.callback_url,
         amount: payload.amount.toFixed(2),
         currency: "BDT",
@@ -111,27 +112,24 @@ export const createBkashPaymentSession = async (payload: {
       },
     );
 
+    if (response.data && response.data.bkashURL) {
+      return response.data;
+    }
+
+    if (response.data && response.data.statusCode && response.data.statusCode !== "0000") {
+      throw new Error(
+        `bKash Portal Error [${response.data.statusCode}]: ${response.data.statusMessage}`,
+      );
+    }
+
     return response.data;
   } catch (error: any) {
     console.error("bKash create payment error:", error.response?.data || error.message);
-    // Fallback to simulated checkout URL
-    const paymentID = `BKASH_PID_${Date.now()}`;
-    return {
-      statusCode: "0000",
-      statusMessage: "Successful",
-      paymentID,
-      bkashURL: `${config.bkash.callback_url}?paymentID=${paymentID}&status=success`,
-      callbackURL: config.bkash.callback_url,
-      successCallbackURL: config.bkash.callback_url,
-      failureCallbackURL: config.bkash.callback_url,
-      cancelledCallbackURL: config.bkash.callback_url,
-      amount: payload.amount.toFixed(2),
-      currency: "BDT",
-      intent: "sale",
-      paymentCreateTime: new Date().toISOString(),
-      transactionStatus: "Initiated",
-      merchantInvoiceNumber: payload.merchantInvoiceNumber,
-    };
+    throw new Error(
+      error.response?.data?.statusMessage ||
+        error.message ||
+        "Failed to create bKash checkout session on Developer Portal",
+    );
   }
 };
 
@@ -141,7 +139,7 @@ export const executeBkashPaymentSession = async (
 ): Promise<IBkashExecutePaymentResponse> => {
   const token = await getBkashGrantToken();
 
-  if (token.startsWith("mock_bkash_id_token_") || paymentID.startsWith("BKASH_")) {
+  if (token.startsWith("mock_bkash_id_token_") || paymentID.startsWith("BKASH_MOCK_")) {
     const formattedAmount = expectedAmount
       ? Number(expectedAmount).toFixed(2)
       : "500.00";
@@ -175,11 +173,27 @@ export const executeBkashPaymentSession = async (
       },
     );
 
-    return response.data;
+    if (
+      response.data &&
+      (response.data.statusCode === "0000" || Boolean(response.data.trxID))
+    ) {
+      return response.data;
+    }
+
+    if (response.data && response.data.statusCode === "2056") {
+      throw new Error(
+        "bKash Verification Incomplete: Please open the bkashURL in your browser, enter wallet number (01770618575), OTP (123456), and PIN (12121) to complete payment first.",
+      );
+    }
+
+    throw new Error(
+      response.data?.statusMessage ||
+        `bKash execute failed with status code ${response.data?.statusCode}`,
+    );
   } catch (error: any) {
     console.error("bKash execute error:", error.response?.data || error.message);
     throw new Error(
-      error.response?.data?.statusMessage || "bKash execute payment failed",
+      error.response?.data?.statusMessage || error.message || "bKash execute payment failed",
     );
   }
 };
@@ -190,7 +204,7 @@ export const queryBkashPaymentSession = async (
 ): Promise<IBkashQueryPaymentResponse> => {
   const token = await getBkashGrantToken();
 
-  if (token.startsWith("mock_bkash_id_token_") || paymentID.startsWith("BKASH_")) {
+  if (token.startsWith("mock_bkash_id_token_") || paymentID.startsWith("BKASH_MOCK_")) {
     const formattedAmount = expectedAmount
       ? Number(expectedAmount).toFixed(2)
       : "500.00";
@@ -218,11 +232,21 @@ export const queryBkashPaymentSession = async (
       },
     );
 
-    return response.data;
+    if (
+      response.data &&
+      (response.data.statusCode === "0000" || Boolean(response.data.trxID))
+    ) {
+      return response.data;
+    }
+
+    throw new Error(
+      response.data?.statusMessage ||
+        `bKash query failed with status code ${response.data?.statusCode}`,
+    );
   } catch (error: any) {
     console.error("bKash query error:", error.response?.data || error.message);
     throw new Error(
-      error.response?.data?.statusMessage || "bKash query payment failed",
+      error.response?.data?.statusMessage || error.message || "bKash query payment failed",
     );
   }
 };

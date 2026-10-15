@@ -131,7 +131,20 @@ sequenceDiagram
     API-->>User: Returns list of completed donations with trxId
 ```
 
-### Step-by-Step Postman Instructions:
+### Official bKash Developer Portal Sandbox Credentials:
+
+| Field | Sandbox Test Value |
+|---|---|
+| **Test Wallet Number** | `01770618575` (or `01877722345`, `01929918378`) |
+| **bKash Verification Code (OTP)** | `123456` |
+| **bKash PIN** | `12121` |
+| **bKash App Key** | `4f6o0cjiki2rfm34kfdadl1eqq` |
+| **bKash App Secret** | `2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b` |
+| **bKash Username** | `sandboxTokenizedUser02` |
+
+---
+
+### Step-by-Step Payment Testing (Real bKash Portal UI):
 
 1. **Step 1: Login to get Access Token**
    - Run `POST /api/v1/auth/login` (or `POST /api/v1/auth/register`).
@@ -144,35 +157,33 @@ sequenceDiagram
      {
        "amount": 500,
        "purpose": "PLATFORM_SUPPORT",
-       "payerReference": "Voluntary Donation"
+       "payerReference": "01770618575"
      }
      ```
    - Click **Send**.
-   - Postman's test script **automatically captures `bkashPaymentId` and `paymentId`** into your Postman variables!
-
-3. **Step 3: Execute Payment Callback**
-   - Click request `GET bKash Callback (Executed by Gateway)`.
-   - The URL is pre-filled: `{{baseUrl}}/payments/bkash/callback?paymentID={{bkashPaymentId}}&status=success&format=json`
-   - Click **Send**.
-   - **Response Output**:
+   - The response returns a real **`bkashURL`** from bKash Developer Portal:
      ```json
      {
        "success": true,
-       "message": "bKash payment callback processed successfully",
        "data": {
-         "payment": {
-           "status": "PAID",
-           "amount": "500",
-           "trxId": "TRX_1792087593976_Z8A4I",
-           "paidAt": "2026-10-15T18:06:34.029Z"
-         }
+         "paymentId": "uuid...",
+         "bkashPaymentId": "TR0011pk0rEmg1792091634596",
+         "bkashURL": "https://sandbox.payment.bkash.com/?paymentId=TR0011pk0rEmg1792091634596&hash=..."
        }
      }
      ```
 
-4. **Step 4: Verify in My Payments**
-   - Click `GET My Payments` (`{{baseUrl}}/payments/my`).
-   - Click **Send** to see your completed transaction with transaction ID and timestamp.
+3. **Step 3: Open `bkashURL` in Browser & Pay with Real bKash UI**
+   - Copy and paste the returned **`bkashURL`** in your browser.
+   - You will see the official **bKash Payment Screen**:
+     - **Enter Wallet Number**: `01770618575` -> Click **Confirm**
+     - **Enter Verification Code (OTP)**: `123456` -> Click **Confirm**
+     - **Enter PIN**: `12121` -> Click **Confirm**
+   - bKash authorizes the payment and automatically redirects to your callback URL!
+
+4. **Step 4: Verify Transaction & Status**
+   - In Postman, run `GET My Payments` (`{{baseUrl}}/payments/my`).
+   - You will see your payment status marked as **`PAID`** with the official bKash **`trxId`**, amount, and `paidAt` timestamp!
 
 ---
 
