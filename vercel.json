@@ -9,11 +9,6 @@
       }
     }
   ],
-  "functions": {
-    "dist/server.js": {
-      "maxDuration": 60
-    }
-  },
   "routes": [
     {
       "src": "/(.*)",
