@@ -21,9 +21,14 @@ export const verifyOrganizationSchema = z.object({
       let status: "APPROVED" | "REJECTED" = "APPROVED";
       if (raw) {
         const upper = raw.trim().toUpperCase();
-        if (["REJECT", "REJECTED", "DECLINE", "DECLINED"].includes(upper)) {
+        if (
+          ["REJECT", "REJECTED", "DECLINE", "DECLINED", "CANCEL", "CANCELLED"].includes(
+            upper,
+          )
+        ) {
           status = "REJECTED";
         } else {
+          // Supports "APPROVED", "APPROVE", "ACCEPT", "ACCEPTED", "AXCEPT", "EXCEPT", etc.
           status = "APPROVED";
         }
       }
