@@ -6,3 +6,5 @@ uploads/*
 !uploads/.gitkeep
 
 .vercel
+.neon
+.env.neon
