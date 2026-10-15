@@ -44,18 +44,21 @@ export const config = {
   smtp_user: smtpUser,
   smtp_password: smtpPassword,
   bkash: {
-    app_key: process.env.BKASH_APP_KEY || "4f6o0cjiki2rfm34kfdadl1eqq",
-    app_secret:
+    app_key: (process.env.BKASH_APP_KEY || "4f6o0cjiki2rfm34kfdadl1eqq").trim(),
+    app_secret: (
       process.env.BKASH_APP_SECRET ||
-      "2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b",
-    username: process.env.BKASH_USERNAME || "sandboxTokenizedUser02",
-    password: process.env.BKASH_PASSWORD || "sandboxTokenizedUser02@12345",
-    base_url:
+      "2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b"
+    ).trim(),
+    username: (process.env.BKASH_USERNAME || "sandboxTokenizedUser02").trim(),
+    password: (process.env.BKASH_PASSWORD || "sandboxTokenizedUser02@12345").trim(),
+    base_url: (
       process.env.BKASH_BASE_URL ||
-      "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout",
-    callback_url:
+      "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout"
+    ).trim(),
+    callback_url: (
       process.env.BKASH_CALLBACK_URL ||
-      "https://blood-link-backend-one.vercel.app/api/v1/payments/bkash/callback",
+      "https://blood-link-backend-one.vercel.app/api/v1/payments/bkash/callback"
+    ).trim(),
   },
 };
 
