@@ -10,17 +10,28 @@ export const updateUserStatusSchema = z.object({
 export const verifyOrganizationSchema = z.object({
   body: z
     .object({
-      verificationStatus: z.enum(["APPROVED", "REJECTED"]).optional(),
-      status: z.enum(["APPROVED", "REJECTED"]).optional(),
+      verificationStatus: z.string().optional(),
+      status: z.string().optional(),
       rejectionReason: z.string().optional(),
     })
-    .default({ verificationStatus: "APPROVED" })
-    .transform((data) => ({
-      verificationStatus: (data.verificationStatus || data.status || "APPROVED") as
-        | "APPROVED"
-        | "REJECTED",
-      rejectionReason: data.rejectionReason,
-    })),
+    .optional()
+    .default({})
+    .transform((data) => {
+      const raw = data?.verificationStatus || data?.status;
+      let status: "APPROVED" | "REJECTED" = "APPROVED";
+      if (raw) {
+        const upper = raw.trim().toUpperCase();
+        if (["REJECT", "REJECTED", "DECLINE", "DECLINED"].includes(upper)) {
+          status = "REJECTED";
+        } else {
+          status = "APPROVED";
+        }
+      }
+      return {
+        verificationStatus: status,
+        rejectionReason: data?.rejectionReason,
+      };
+    }),
 });
 
 export const AdminValidation = {

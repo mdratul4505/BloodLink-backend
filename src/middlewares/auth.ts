@@ -20,15 +20,33 @@ declare global {
   }
 }
 
+const extractToken = (req: Request): string | null => {
+  let token = req.headers.authorization;
+  if (token) {
+    token = token.trim();
+    // Strip wrapping quotes if any
+    if (
+      (token.startsWith('"') && token.endsWith('"')) ||
+      (token.startsWith("'") && token.endsWith("'"))
+    ) {
+      token = token.slice(1, -1).trim();
+    }
+    // Remove repeated 'Bearer' prefixes (e.g., 'Bearer Bearer ...')
+    while (/^bearer\s+/i.test(token)) {
+      token = token.replace(/^bearer\s+/i, "").trim();
+    }
+    return token.length > 0 ? token : null;
+  }
+  if (req.cookies?.accessToken) {
+    return req.cookies.accessToken;
+  }
+  return null;
+};
+
 export const auth = (...requiredRoles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      let token = req.headers.authorization;
-      if (token && token.startsWith("Bearer ")) {
-        token = token.split(" ")[1];
-      } else if (req.cookies?.accessToken) {
-        token = req.cookies.accessToken;
-      }
+      const token = extractToken(req);
 
       if (!token) {
         throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
@@ -47,7 +65,27 @@ export const auth = (...requiredRoles: string[]) => {
       let decoded: any;
       try {
         decoded = verifyToken(token, config.jwt.access_secret);
-      } catch (err) {
+      } catch (err: any) {
+        // Did the user pass a refresh token by mistake?
+        try {
+          verifyToken(token, config.jwt.refresh_secret);
+          throw new AppError(
+            httpStatus.UNAUTHORIZED,
+            "You provided a Refresh Token instead of an Access Token! Please use the 'accessToken' in the Authorization header.",
+          );
+        } catch (innerErr) {
+          if (innerErr instanceof AppError) {
+            throw innerErr;
+          }
+        }
+
+        if (err?.name === "TokenExpiredError") {
+          throw new AppError(
+            httpStatus.UNAUTHORIZED,
+            "Your access token has expired. Please log in again to get a fresh token.",
+          );
+        }
+
         throw new AppError(httpStatus.UNAUTHORIZED, "Invalid or expired token!");
       }
 
@@ -98,12 +136,7 @@ export const optionalAuth = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    let token = req.headers.authorization;
-    if (token && token.startsWith("Bearer ")) {
-      token = token.split(" ")[1];
-    } else if (req.cookies?.accessToken) {
-      token = req.cookies.accessToken;
-    }
+    const token = extractToken(req);
 
     if (token) {
       const blacklisted = await isTokenBlacklisted(token);
