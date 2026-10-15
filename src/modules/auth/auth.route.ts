@@ -14,6 +14,24 @@ router.post(
 );
 
 router.post(
+  "/verify-email",
+  validateRequest(AuthValidation.verifyEmailOtpValidationSchema),
+  AuthController.verifyEmailOtp,
+);
+
+router.post(
+  "/resend-verification-otp",
+  rateLimiter({
+    keyPrefix: "resend-verify-otp",
+    maxRequests: 5,
+    windowSeconds: 60 * 15,
+    message: "Too many OTP requests. Please wait 15 minutes.",
+  }),
+  validateRequest(AuthValidation.resendEmailOtpValidationSchema),
+  AuthController.resendEmailOtp,
+);
+
+router.post(
   "/login",
   rateLimiter({
     keyPrefix: "login",

@@ -59,8 +59,16 @@ process.on("uncaughtException", (error) => {
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received. Gracefully shutting down...");
   if (server) server.close();
-  await prisma.$disconnect();
   process.exit(0);
 });
 
-main();
+export default app;
+
+if (!process.env.VERCEL) {
+  main();
+} else {
+  // On Vercel serverless, run startup tasks asynchronously without binding to a local port
+  seedSuperAdmin().catch((err) =>
+    console.warn("Vercel initial admin seed notice:", err?.message || err),
+  );
+}

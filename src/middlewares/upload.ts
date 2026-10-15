@@ -5,11 +5,19 @@ import httpStatus from "http-status";
 import multer from "multer";
 import AppError from "../utils/AppError.js";
 
-const uploadDir = path.join(process.cwd(), "uploads", "avatars");
+const uploadDir = process.env.VERCEL
+  ? path.join("/tmp", "uploads", "avatars")
+  : path.join(process.cwd(), "uploads", "avatars");
 
-// Ensure upload directory exists
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+// Ensure upload directory exists safely
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (err: any) {
+  console.warn(
+    `[Upload] Notice: Could not create upload directory (${err?.message || err})`,
+  );
 }
 
 const storage = multer.diskStorage({

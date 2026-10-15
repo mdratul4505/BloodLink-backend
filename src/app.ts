@@ -33,7 +33,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Static file serving for uploaded avatars/images
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+const uploadsPath = process.env.VERCEL
+  ? path.join("/tmp", "uploads")
+  : path.join(process.cwd(), "uploads");
+app.use("/uploads", express.static(uploadsPath));
 
 // Root health check endpoint
 app.get("/", (_req: Request, res: Response) => {

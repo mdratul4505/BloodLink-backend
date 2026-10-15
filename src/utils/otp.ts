@@ -28,9 +28,39 @@ export const removeOtp = async (email: string): Promise<void> => {
   await deleteCache(key);
 };
 
+const REGISTRATION_OTP_PREFIX = "otp:email_verify:";
+
+export const storeRegistrationOtp = async (
+  email: string,
+  otp: string,
+): Promise<void> => {
+  const key = `${REGISTRATION_OTP_PREFIX}${email.toLowerCase()}`;
+  await setCache(key, otp, OTP_EXPIRY_SECONDS);
+};
+
+export const verifyRegistrationOtp = async (
+  email: string,
+  otp: string,
+): Promise<boolean> => {
+  const key = `${REGISTRATION_OTP_PREFIX}${email.toLowerCase()}`;
+  const storedOtp = await getCache<string>(key);
+  if (!storedOtp) {
+    return false;
+  }
+  return String(storedOtp).trim() === String(otp).trim();
+};
+
+export const removeRegistrationOtp = async (email: string): Promise<void> => {
+  const key = `${REGISTRATION_OTP_PREFIX}${email.toLowerCase()}`;
+  await deleteCache(key);
+};
+
 export default {
   generateOtp,
   storeOtp,
   verifyOtp,
   removeOtp,
+  storeRegistrationOtp,
+  verifyRegistrationOtp,
+  removeRegistrationOtp,
 };

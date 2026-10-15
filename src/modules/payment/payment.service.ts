@@ -73,21 +73,20 @@ export const handleBkashCallback = async (
   status: string,
 ) => {
   // Find payment by bkashPaymentId
-  const payment = await prisma.payment.findFirst({
+  let currentPayment = await prisma.payment.findFirst({
     where: { bkashPaymentId: paymentID },
   });
 
-  if (!payment) {
-    // Attempt fallback lookup by ID
-    const fallbackPayment = await prisma.payment.findFirst({
+  if (!currentPayment) {
+    // Attempt fallback lookup for latest pending payment
+    currentPayment = await prisma.payment.findFirst({
+      where: { status: "PENDING" },
       orderBy: { createdAt: "desc" },
     });
-    if (!fallbackPayment) {
+    if (!currentPayment) {
       throw new AppError(httpStatus.NOT_FOUND, "Payment session not found");
     }
   }
-
-  const currentPayment = payment!;
 
   // 1. IDEMPOTENCY CHECK:
   // If payment is already PAID, ignore duplicate execution and return success
@@ -128,7 +127,10 @@ export const handleBkashCallback = async (
   // Must NOT trust callback status alone - execute and verify via Query API
   let executeResult: any;
   try {
-    executeResult = await BkashService.executeBkashPaymentSession(paymentID);
+    executeResult = await BkashService.executeBkashPaymentSession(
+      paymentID,
+      Number(currentPayment.amount),
+    );
   } catch (error: any) {
     await prisma.payment.update({
       where: { id: currentPayment.id },
@@ -144,7 +146,10 @@ export const handleBkashCallback = async (
   }
 
   // 3. QUERY PAYMENT TO VERIFY:
-  const queryResult = await BkashService.queryBkashPaymentSession(paymentID);
+  const queryResult = await BkashService.queryBkashPaymentSession(
+    paymentID,
+    Number(currentPayment.amount),
+  );
 
   const trxId = executeResult.trxID || queryResult.trxID;
   const verifiedAmount = Number.parseFloat(

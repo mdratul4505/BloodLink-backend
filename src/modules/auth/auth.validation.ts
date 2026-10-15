@@ -21,6 +21,7 @@ export const registerValidationSchema = z.object({
     bloodGroup: bloodGroupEnum.optional(),
     district: z.string().optional(),
     upazila: z.string().optional(),
+    otp: z.string().min(6, "OTP must be 6 digits").max(6, "OTP must be 6 digits").optional(),
   }),
 });
 
@@ -56,9 +57,11 @@ export const googleAuthValidationSchema = z.object({
 });
 
 export const refreshTokenValidationSchema = z.object({
-  body: z.object({
-    refreshToken: z.string().optional(),
-  }),
+  body: z
+    .object({
+      refreshToken: z.string().optional(),
+    })
+    .optional(),
   cookies: z
     .object({
       refreshToken: z.string().optional(),
@@ -99,6 +102,19 @@ export const changePasswordValidationSchema = z.object({
     }),
 });
 
+export const verifyEmailOtpValidationSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid email address"),
+    otp: z.string().min(6, "OTP must be 6 digits").max(6, "OTP must be 6 digits"),
+  }),
+});
+
+export const resendEmailOtpValidationSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid email address"),
+  }),
+});
+
 export const AuthValidation = {
   registerValidationSchema,
   loginValidationSchema,
@@ -108,6 +124,8 @@ export const AuthValidation = {
   verifyOtpValidationSchema,
   resetPasswordValidationSchema,
   changePasswordValidationSchema,
+  verifyEmailOtpValidationSchema,
+  resendEmailOtpValidationSchema,
 };
 
 export default AuthValidation;

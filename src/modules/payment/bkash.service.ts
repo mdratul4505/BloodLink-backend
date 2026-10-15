@@ -137,16 +137,20 @@ export const createBkashPaymentSession = async (payload: {
 
 export const executeBkashPaymentSession = async (
   paymentID: string,
+  expectedAmount?: number | string,
 ): Promise<IBkashExecutePaymentResponse> => {
   const token = await getBkashGrantToken();
 
   if (token.startsWith("mock_bkash_id_token_") || paymentID.startsWith("BKASH_")) {
+    const formattedAmount = expectedAmount
+      ? Number(expectedAmount).toFixed(2)
+      : "500.00";
     return {
       statusCode: "0000",
       statusMessage: "Successful",
       paymentID,
       trxID: `TRX_${Date.now()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
-      amount: "500.00",
+      amount: formattedAmount,
       transactionStatus: "Completed",
       paymentExecuteTime: new Date().toISOString(),
       currency: "BDT",
@@ -182,15 +186,19 @@ export const executeBkashPaymentSession = async (
 
 export const queryBkashPaymentSession = async (
   paymentID: string,
+  expectedAmount?: number | string,
 ): Promise<IBkashQueryPaymentResponse> => {
   const token = await getBkashGrantToken();
 
   if (token.startsWith("mock_bkash_id_token_") || paymentID.startsWith("BKASH_")) {
+    const formattedAmount = expectedAmount
+      ? Number(expectedAmount).toFixed(2)
+      : "500.00";
     return {
       statusCode: "0000",
       statusMessage: "Successful",
       paymentID,
-      amount: "500.00",
+      amount: formattedAmount,
       trxID: `TRX_${Date.now()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
       transactionStatus: "Completed",
     };

@@ -7,21 +7,30 @@ import AuthService from "./auth.service.js";
 export const register = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthService.registerUser(req.body);
 
-  res.cookie("refreshToken", result.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  if (result.refreshToken) {
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+  }
 
   sendResponse(res, {
-    statusCode: httpStatus.CREATED,
+    statusCode: result.isVerified ? httpStatus.CREATED : httpStatus.OK,
     success: true,
-    message: "User registered successfully",
-    data: {
-      user: result.user,
-      accessToken: result.accessToken,
-    },
+    message: result.message,
+    data: result.isVerified
+      ? {
+          user: result.user,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+        }
+      : {
+          email: result.email,
+          requiresOtp: result.requiresOtp,
+          message: result.message,
+        },
   });
 });
 
@@ -42,6 +51,7 @@ export const login = catchAsync(async (req: Request, res: Response) => {
     data: {
       user: result.user,
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
     },
   });
 });
@@ -63,6 +73,7 @@ export const googleAuth = catchAsync(async (req: Request, res: Response) => {
     data: {
       user: result.user,
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
     },
   });
 });
@@ -143,8 +154,43 @@ export const changePassword = catchAsync(async (req: Request, res: Response) => 
   });
 });
 
+export const verifyEmailOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.verifyEmailOtp(req.body);
+
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Email verified successfully! You are now logged in.",
+    data: {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    },
+  });
+});
+
+export const resendEmailOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.resendEmailOtp(req.body.email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
 export const AuthController = {
   register,
+  verifyEmailOtp,
+  resendEmailOtp,
   login,
   googleAuth,
   refreshToken,

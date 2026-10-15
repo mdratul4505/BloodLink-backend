@@ -4,3 +4,5 @@ dist
 prisma/generated
 uploads/*
 !uploads/.gitkeep
+
+.vercel

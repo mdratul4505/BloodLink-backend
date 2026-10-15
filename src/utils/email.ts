@@ -1,5 +1,7 @@
 import nodemailer, { type Transporter } from "nodemailer";
+import httpStatus from "http-status";
 import config from "../config/index.js";
+import AppError from "./AppError.js";
 
 let transporter: Transporter | null = null;
 
@@ -41,11 +43,14 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async (options: SendEmailOptions): Promise<boolean> => {
+  if (!config.email.smtp_user || !config.email.smtp_password) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Email service is not configured. Please set SMTP_USER and SMTP_PASSWORD in your environment variables (or Vercel Project Settings).",
+    );
+  }
+
   try {
-    if (!config.email.smtp_user || !config.email.smtp_password) {
-      console.warn(`[Email] Skipping email to ${options.to} (SMTP credentials not configured)`);
-      return false;
-    }
     const mailer = getMailTransporter();
     const mailOptions = {
       from: config.email.from,
@@ -65,7 +70,10 @@ export const sendEmail = async (options: SendEmailOptions): Promise<boolean> => 
     return true;
   } catch (error: any) {
     console.error(`[Email] Error sending email to "${options.to}":`, error?.message || error);
-    return false;
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `Failed to send email to ${options.to}: ${error?.message || "SMTP transmission error"}`,
+    );
   }
 };
 
@@ -320,9 +328,73 @@ export const sendWelcomeEmail = async (to: string, name: string): Promise<boolea
   });
 };
 
+// 5. Account Registration OTP Email
+export const sendRegistrationOtpEmail = async (
+  to: string,
+  otp: string,
+  name?: string,
+): Promise<boolean> => {
+  const recipientName = name || "BloodLink User";
+  const html = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fa; margin: 0; padding: 20px; color: #2d3748; }
+      .container { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+      .header { background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); padding: 32px 20px; text-align: center; color: #ffffff; }
+      .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 0.5px; }
+      .header p { margin: 6px 0 0; font-size: 14px; opacity: 0.95; }
+      .content { padding: 32px 28px; }
+      .greeting { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #1a202c; }
+      .desc { font-size: 15px; line-height: 1.6; color: #4a5568; margin-bottom: 24px; }
+      .otp-box { text-align: center; margin: 28px 0; padding: 20px; background: #fff5f5; border: 2px dashed #feb2b2; border-radius: 10px; }
+      .otp-code { font-size: 38px; font-weight: 800; letter-spacing: 10px; color: #e53e3e; font-family: monospace; }
+      .otp-validity { font-size: 13px; color: #718096; margin-top: 8px; }
+      .instruction { background: #edf2f7; padding: 14px 18px; border-radius: 8px; font-size: 14px; color: #4a5568; line-height: 1.6; }
+      .footer { background: #edf2f7; text-align: center; padding: 16px; font-size: 12px; color: #718096; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>BloodLink</h1>
+        <p>Verify Your Email Address</p>
+      </div>
+      <div class="content">
+        <div class="greeting">Welcome, ${recipientName}!</div>
+        <div class="desc">
+          Thank you for joining BloodLink. To complete your registration and activate your account, please verify your email address using this verification code:
+        </div>
+        <div class="otp-box">
+          <div class="otp-code">${otp}</div>
+          <div class="otp-validity">This code is valid for <strong>10 minutes</strong>.</div>
+        </div>
+        <div class="instruction">
+          Enter this OTP code on the verification screen to activate your account. Once verified, you will be able to log in, register as a voluntary donor, and access all blood donation services.
+        </div>
+      </div>
+      <div class="footer">
+        &copy; ${new Date().getFullYear()} BloodLink Platform. Saving lives together.<br/>
+        If you did not sign up for BloodLink, you can safely ignore this email.
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `Your BloodLink Verification Code: ${otp}`,
+    html,
+  });
+};
+
 export const EmailService = {
   sendEmail,
   sendOtpEmail,
+  sendRegistrationOtpEmail,
   sendPasswordChangedEmail,
   sendLoginAlertEmail,
   sendWelcomeEmail,

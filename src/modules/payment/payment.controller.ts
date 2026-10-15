@@ -25,6 +25,18 @@ export const handleBkashCallback = catchAsync(
 
     const result = await PaymentService.handleBkashCallback(paymentID, status);
 
+    if (
+      req.query.format === "json" ||
+      req.headers.accept?.includes("application/json")
+    ) {
+      return sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "bKash payment callback processed successfully",
+        data: result,
+      });
+    }
+
     // Redirect to frontend as required by flow
     res.redirect(result.redirectUrl);
   },
