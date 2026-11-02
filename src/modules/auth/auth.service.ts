@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import config from "../../config/index.js";
 import prisma from "../../config/prisma.js";
+import { googleClient } from "../../lib/googleAuth.js";
 import AppError from "../../utils/AppError.js";
 import {
   sendLoginAlertEmail,
@@ -51,7 +52,7 @@ export const registerUser = async (payload: {
   let user = existingUser;
 
   if (!user) {
-    user = await prisma.$transaction(async (tx) => {
+    user = await prisma.$transaction(async (tx: any) => {
       const newUser = await tx.user.create({
         data: {
           name: payload.name,
@@ -239,24 +240,50 @@ export const googleLogin = async (payload: {
 
   const rawToken = payload.idToken || payload.credential || payload.token;
 
-  // If Google ID token is provided, verify it directly against Google OAuth2 tokeninfo API
+  // If Google ID token is provided, verify using Google OAuth2 client or tokeninfo API
   if (rawToken && (!googleId || !email)) {
     try {
-      const response = await axios.get(
-        `https://oauth2.googleapis.com/tokeninfo?id_token=${rawToken}`,
-      );
-      if (response.data) {
-        googleId = response.data.sub;
-        email = response.data.email;
-        name = name || response.data.name || response.data.given_name || "Google User";
-        avatar = avatar || response.data.picture;
+      if (config.google.client_id) {
+        const ticket = await googleClient.verifyIdToken({
+          idToken: rawToken,
+          audience: config.google.client_id,
+        });
+        const googlePayload = ticket.getPayload();
+        if (googlePayload) {
+          googleId = googlePayload.sub;
+          email = googlePayload.email;
+          name = name || googlePayload.name || googlePayload.given_name || "Google User";
+          avatar = avatar || googlePayload.picture;
+        }
+      } else {
+        const response = await axios.get(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${rawToken}`,
+        );
+        if (response.data) {
+          googleId = response.data.sub;
+          email = response.data.email;
+          name = name || response.data.name || response.data.given_name || "Google User";
+          avatar = avatar || response.data.picture;
+        }
       }
     } catch (err: any) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        "Invalid or expired Google OAuth token: " +
-          (err?.response?.data?.error_description || err?.message || "Token verification failed"),
-      );
+      try {
+        const response = await axios.get(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${rawToken}`,
+        );
+        if (response.data) {
+          googleId = response.data.sub;
+          email = response.data.email;
+          name = name || response.data.name || response.data.given_name || "Google User";
+          avatar = avatar || response.data.picture;
+        }
+      } catch (fallbackErr: any) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid or expired Google OAuth token: " +
+            (err?.message || "Token verification failed"),
+        );
+      }
     }
   }
 
