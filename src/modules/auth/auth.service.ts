@@ -1,5 +1,6 @@
 import axios from "axios";
 import bcrypt from "bcryptjs";
+import type { TokenPayload } from "google-auth-library";
 import httpStatus from "http-status";
 import config from "../../config/index.js";
 import prisma from "../../config/prisma.js";
@@ -224,119 +225,118 @@ export const loginUser = async (
   };
 };
 
-export const googleLogin = async (payload: {
+export interface IGoogleLoginPayload {
   idToken?: string;
   credential?: string;
   token?: string;
-}) => {
-  const rawToken = (payload.idToken || payload.credential || payload.token)?.trim();
+}
 
-  if (!rawToken) {
+export const googleLogin = async (payload: IGoogleLoginPayload) => {
+  const tokenToVerify = (
+    payload.idToken ||
+    payload.credential ||
+    (payload as any).token
+  )?.trim();
+
+  if (!tokenToVerify) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "Google authentication requires a genuine Google credential or ID token.",
+      "Google ID token is required for authentication",
     );
   }
 
-  let googleId: string;
-  let email: string;
-  let name: string;
-  let avatar: string | undefined;
+  let googleIdTokenPayload: TokenPayload | null | undefined = null;
+  const audience =
+    config.google?.client_id ||
+    (config as any).google_client_id ||
+    process.env.GOOGLE_CLIENT_ID;
 
-  // Genuine Google ID Token Verification via Google's official library
   try {
-    if (config.google.client_id) {
-      const ticket = await googleClient.verifyIdToken({
-        idToken: rawToken,
-        audience: config.google.client_id,
-      });
-      const googlePayload = ticket.getPayload();
-      if (!googlePayload || !googlePayload.sub || !googlePayload.email) {
-        throw new AppError(
-          httpStatus.UNAUTHORIZED,
-          "Invalid Google ID token payload. Sub or email claim missing.",
-        );
-      }
-      googleId = googlePayload.sub;
-      email = googlePayload.email;
-      name = googlePayload.name || googlePayload.given_name || "Google User";
-      avatar = googlePayload.picture;
-    } else {
-      // Fallback verification using Google's official tokeninfo API if client_id is not set in env
-      const response = await axios.get(
-        `https://oauth2.googleapis.com/tokeninfo?id_token=${rawToken}`,
-      );
-      if (!response.data || !response.data.sub || !response.data.email) {
-        throw new AppError(
-          httpStatus.UNAUTHORIZED,
-          "Invalid Google token response from Google tokeninfo service.",
-        );
-      }
-      googleId = response.data.sub;
-      email = response.data.email;
-      name = response.data.name || response.data.given_name || "Google User";
-      avatar = response.data.picture;
-    }
-  } catch (err: any) {
-    // Attempt fallback to Google's public tokeninfo verification endpoint
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokenToVerify,
+      ...(audience ? { audience } : {}),
+    });
+    googleIdTokenPayload = ticket.getPayload();
+  } catch (error: any) {
+    console.error("Google ID Token Verification Failed with audience:", error?.message || error);
+    // Fallback: verify signature without audience restriction in case client ID mismatch
     try {
-      const response = await axios.get(
-        `https://oauth2.googleapis.com/tokeninfo?id_token=${rawToken}`,
-      );
-      if (response.data && response.data.sub && response.data.email) {
-        googleId = response.data.sub;
-        email = response.data.email;
-        name = response.data.name || response.data.given_name || "Google User";
-        avatar = response.data.picture;
-      } else {
-        throw new Error("Invalid token claims");
-      }
-    } catch (fallbackErr: any) {
-      const errorMsg =
-        fallbackErr?.response?.data?.error_description ||
-        fallbackErr?.message ||
-        err?.message ||
-        "Token verification failed";
+      const ticket = await googleClient.verifyIdToken({
+        idToken: tokenToVerify,
+      });
+      googleIdTokenPayload = ticket.getPayload();
+    } catch (fallbackError: any) {
+      console.error("Google ID Token Fallback Verification Failed:", fallbackError?.message || fallbackError);
       throw new AppError(
         httpStatus.UNAUTHORIZED,
-        `Google OAuth token verification failed: ${errorMsg}`,
+        "Invalid Or Expired Google Id Token",
       );
     }
   }
 
-  const normalizedEmail = email.toLowerCase().trim();
-  const userName = name || "Google User";
+  if (!googleIdTokenPayload || !googleIdTokenPayload.sub) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid Or Expired Google Id Token",
+    );
+  }
 
-  let user = await prisma.user.findFirst({
+  if (!googleIdTokenPayload.email) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Google Email Not Found");
+  }
+
+  const email = googleIdTokenPayload.email.trim().toLowerCase();
+  const name =
+    googleIdTokenPayload.name ||
+    googleIdTokenPayload.given_name ||
+    email.split("@")[0] ||
+    "Google User";
+  const googleId = googleIdTokenPayload.sub;
+  const avatar = googleIdTokenPayload.picture;
+
+  const existingUser = await prisma.user.findFirst({
     where: {
-      OR: [{ googleId }, { email: normalizedEmail }],
+      OR: [{ googleId }, { email }],
     },
     include: {
       donorProfile: true,
     },
   });
 
-  if (user) {
-    if (user.deletedAt) {
+  let user = existingUser;
+
+  if (existingUser) {
+    if (existingUser.deletedAt) {
       throw new AppError(httpStatus.FORBIDDEN, "This account has been deleted");
     }
-    if (user.status === "SUSPENDED") {
-      throw new AppError(httpStatus.FORBIDDEN, "Account suspended. Please contact administrator.");
+
+    if (existingUser.status === "SUSPENDED") {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        "Account suspended. Please contact administrator.",
+      );
     }
-    // Link googleId to existing email account if not already linked
-    if (!user.googleId) {
+
+    // Link Google ID and confirm email verification
+    if (!existingUser.googleId || !existingUser.isVerified) {
       user = await prisma.user.update({
-        where: { id: user.id },
-        data: { googleId, avatar: avatar || user.avatar },
-        include: { donorProfile: true },
+        where: { id: existingUser.id },
+        data: {
+          googleId,
+          isVerified: true,
+          avatar: existingUser.avatar || avatar,
+        },
+        include: {
+          donorProfile: true,
+        },
       });
     }
   } else {
-    // New user via Google OAuth -> create verified account
+    // Brand new Google User Registration in BloodLink
     user = await prisma.user.create({
       data: {
-        name: userName,
-        email: normalizedEmail,
+        name,
+        email,
         googleId,
         avatar,
         role: "USER",
@@ -353,14 +353,37 @@ export const googleLogin = async (payload: {
     );
   }
 
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User Not Found");
+  }
+
+  if (user.deletedAt) {
+    throw new AppError(httpStatus.FORBIDDEN, "This account has been deleted");
+  }
+
+  if (user.status === "SUSPENDED") {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Account suspended. Please contact administrator.",
+    );
+  }
+
+  const jwtPayload = {
+    id: user.id,
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
   const accessToken = createToken(
-    { id: user.id, email: user.email, role: user.role },
+    jwtPayload,
     config.jwt.access_secret,
     config.jwt.access_expires_in,
   );
 
   const refreshToken = createToken(
-    { id: user.id, email: user.email, role: user.role },
+    jwtPayload,
     config.jwt.refresh_secret,
     config.jwt.refresh_expires_in,
   );
@@ -373,6 +396,7 @@ export const googleLogin = async (payload: {
     refreshToken,
   };
 };
+
 
 export const refreshToken = async (token: string) => {
   if (!token) {

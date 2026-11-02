@@ -23,7 +23,7 @@ export const expireOldBloodRequests = async (): Promise<number> => {
       return 0;
     }
 
-    const requestIds = expiredRequests.map((r) => r.id);
+    const requestIds = expiredRequests.map((r: any) => r.id);
 
     // Update statuses to EXPIRED
     await prisma.bloodRequest.updateMany({
@@ -37,7 +37,7 @@ export const expireOldBloodRequests = async (): Promise<number> => {
 
     // Notify requesters that request has expired
     await prisma.notification.createMany({
-      data: expiredRequests.map((req) => ({
+      data: expiredRequests.map((req: any) => ({
         userId: req.requesterId,
         requestId: req.id,
         type: "REQUEST_STATUS_CHANGED",

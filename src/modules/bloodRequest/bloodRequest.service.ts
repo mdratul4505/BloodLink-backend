@@ -70,7 +70,7 @@ export const createBloodRequest = async (
 
     if (matchingDonors.length > 0) {
       await prisma.notification.createMany({
-        data: matchingDonors.map((donor) => ({
+        data: matchingDonors.map((donor: any) => ({
           userId: donor.userId,
           requestId: bloodRequest.id,
           type: "NEW_MATCHING_REQUEST",
@@ -483,7 +483,7 @@ export const completeDonation = async (
     newUnitsFulfilled >= request.units ? "FULFILLED" : "PARTIALLY_FULFILLED";
 
   // TECHNICAL CHALLENGE ATOMIC TRANSACTION
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: any) => {
     // 1. Create Donation record
     const donation = await tx.donation.create({
       data: {

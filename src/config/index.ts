@@ -26,6 +26,7 @@ export const config = {
   google: {
     client_id: process.env.GOOGLE_CLIENT_ID || "",
   },
+  google_client_id: process.env.GOOGLE_CLIENT_ID || "",
   admin: {
     name: process.env.ADMIN_NAME || "BloodLink Super Admin",
     email: process.env.ADMIN_EMAIL || "admin@bloodlink.org",

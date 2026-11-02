@@ -46,7 +46,7 @@ export const updateMyProfile = async (
     lastDonationDate?: string | Date;
   },
 ) => {
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: any) => {
     // Update user basic info
     const updatedUser = await tx.user.update({
       where: { id: userId },

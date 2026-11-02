@@ -83,7 +83,7 @@ export const updateUserStatus = async (
     );
   }
 
-  const updatedUser = await prisma.$transaction(async (tx) => {
+  const updatedUser = await prisma.$transaction(async (tx: any) => {
     const user = await tx.user.update({
       where: { id: userId },
       data: { status: payload.status },
@@ -130,7 +130,7 @@ export const verifyOrganization = async (
     throw new AppError(httpStatus.NOT_FOUND, "Organization not found");
   }
 
-  const updatedOrg = await prisma.$transaction(async (tx) => {
+  const updatedOrg = await prisma.$transaction(async (tx: any) => {
     const org = await tx.organization.update({
       where: { id: organizationId },
       data: {

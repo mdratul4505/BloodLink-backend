@@ -27,7 +27,7 @@ export const applyOrganization = async (
   }
 
   // Create organization with verificationStatus: PENDING
-  const organization = await prisma.$transaction(async (tx) => {
+  const organization = await prisma.$transaction(async (tx: any) => {
     const org = await tx.organization.create({
       data: {
         name: payload.name,

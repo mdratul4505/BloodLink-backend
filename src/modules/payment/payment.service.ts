@@ -175,7 +175,7 @@ export const handleBkashCallback = async (
 
   // 4. ATOMIC UPDATE IN TRANSACTION:
   // Save Payment.status = PAID + trxId + PaymentEvent log
-  const updatedPayment = await prisma.$transaction(async (tx) => {
+  const updatedPayment = await prisma.$transaction(async (tx: any) => {
     const paidPayment = await tx.payment.update({
       where: { id: currentPayment.id },
       data: {
