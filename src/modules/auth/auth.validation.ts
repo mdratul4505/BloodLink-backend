@@ -38,22 +38,11 @@ export const googleAuthValidationSchema = z.object({
       idToken: z.string().optional(),
       credential: z.string().optional(),
       token: z.string().optional(),
-      googleId: z.string().optional(),
-      email: z.string().email("Invalid email address").optional(),
-      name: z.string().optional(),
-      avatar: z.string().optional(),
     })
-    .refine(
-      (data) =>
-        (data.googleId && data.email) ||
-        data.idToken ||
-        data.credential ||
-        data.token,
-      {
-        message:
-          "Google authentication requires either (googleId and email) or a valid Google (idToken / credential).",
-      },
-    ),
+    .refine((data) => Boolean(data.idToken || data.credential || data.token), {
+      message:
+        "Google authentication requires a genuine Google OAuth credential or ID token.",
+    }),
 });
 
 export const refreshTokenValidationSchema = z.object({
