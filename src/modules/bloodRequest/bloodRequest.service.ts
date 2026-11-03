@@ -111,8 +111,10 @@ export const getAllBloodRequests = async (query: {
     deletedAt: null,
   };
 
-  if (query.status) {
+  if (query.status && query.status !== "ALL") {
     whereClause.status = query.status;
+  } else if (!query.status) {
+    whereClause.status = "OPEN";
   }
   if (query.bloodGroup) {
     whereClause.bloodGroup = query.bloodGroup;
@@ -331,7 +333,7 @@ export const updateRequestStatus = async (
 export const respondToRequest = async (
   requestId: string,
   donorId: string,
-  payload: { status: "AVAILABLE" | "UNABLE"; message?: string },
+  payload: { status: "AVAILABLE" | "UNABLE"; message?: string; phone?: string },
 ) => {
   const request = await prisma.bloodRequest.findUnique({
     where: { id: requestId },
@@ -341,12 +343,32 @@ export const respondToRequest = async (
     throw new AppError(httpStatus.NOT_FOUND, "Blood request not found");
   }
 
+  // Prevent requester responding to own request
+  if (request.requesterId === donorId) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "You cannot respond to your own blood request.",
+    );
+  }
+
   // Business rule: FULFILLED/CANCELLED/EXPIRED request-এ নতুন response বন্ধ
   if (["FULFILLED", "CANCELLED", "EXPIRED"].includes(request.status)) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       `Cannot respond to a ${request.status.toLowerCase()} request.`,
     );
+  }
+
+  // If phone is provided, update donor user record with this mobile number
+  if (payload.phone && payload.phone.trim()) {
+    try {
+      await prisma.user.update({
+        where: { id: donorId },
+        data: { phone: payload.phone.trim() },
+      });
+    } catch (err) {
+      console.error("Failed to update donor phone number:", err);
+    }
   }
 
   // Business rule: duplicate response prevented via DB unique constraint + explicit check
@@ -375,7 +397,7 @@ export const respondToRequest = async (
     },
     include: {
       donor: {
-        select: { id: true, name: true, phone: true },
+        select: { id: true, name: true, phone: true, email: true },
       },
     },
   });
@@ -511,6 +533,16 @@ export const confirmDonorResponse = async (
           donorProfile: true,
         },
       },
+    },
+  });
+
+  // When donor response is approved/confirmed, update BloodRequest to FULFILLED
+  // so it is immediately removed from the Home Page and public Blood Requests list
+  await prisma.bloodRequest.update({
+    where: { id: requestId },
+    data: {
+      status: "FULFILLED",
+      unitsFulfilled: request.units,
     },
   });
 

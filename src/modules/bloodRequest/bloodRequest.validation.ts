@@ -62,6 +62,7 @@ export const donorRespondSchema = z.object({
   body: z.object({
     status: z.enum(["AVAILABLE", "UNABLE"]).default("AVAILABLE"),
     message: z.string().optional(),
+    phone: z.string().optional(),
   }),
 });
 
