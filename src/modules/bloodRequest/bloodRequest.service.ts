@@ -442,7 +442,7 @@ export const getResponsesForRequest = async (
 
 export const confirmDonorResponse = async (
   requestId: string,
-  donorId: string,
+  donorOrResponseId: string,
   userId: string,
   userRole: string,
 ) => {
@@ -469,12 +469,14 @@ export const confirmDonorResponse = async (
     );
   }
 
-  const existingResponse = await prisma.donorResponse.findUnique({
+  // Find response by donorId or response primary key id
+  const existingResponse = await prisma.donorResponse.findFirst({
     where: {
-      requestId_donorId: {
-        requestId,
-        donorId,
-      },
+      requestId,
+      OR: [
+        { donorId: donorOrResponseId },
+        { id: donorOrResponseId },
+      ],
     },
   });
 
@@ -494,10 +496,7 @@ export const confirmDonorResponse = async (
 
   const updatedResponse = await prisma.donorResponse.update({
     where: {
-      requestId_donorId: {
-        requestId,
-        donorId,
-      },
+      id: existingResponse.id,
     },
     data: {
       status: "CONFIRMED",
@@ -519,7 +518,7 @@ export const confirmDonorResponse = async (
   try {
     await prisma.notification.create({
       data: {
-        userId: donorId,
+        userId: existingResponse.donorId,
         requestId: request.id,
         type: "RESPONSE_CONFIRMED",
         title: "Donation Offer Approved! 🩸",

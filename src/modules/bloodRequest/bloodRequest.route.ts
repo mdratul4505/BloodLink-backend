@@ -49,6 +49,41 @@ router.patch(
   auth(),
   BloodRequestController.confirmResponse,
 );
+router.post(
+  "/:id/responses/:donorId/confirm",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
+router.patch(
+  "/:id/responses/:donorId/approve",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
+router.post(
+  "/:id/responses/:donorId/approve",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
+router.patch(
+  "/:id/confirm-response",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
+router.post(
+  "/:id/confirm-response",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
+router.patch(
+  "/:id/confirm-response/:donorId",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
+router.post(
+  "/:id/confirm-response/:donorId",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
 
 router.patch(
   "/:id/status",

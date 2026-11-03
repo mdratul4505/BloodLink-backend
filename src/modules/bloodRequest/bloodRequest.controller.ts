@@ -159,7 +159,8 @@ export const getResponsesForRequest = catchAsync(
 
 export const confirmResponse = catchAsync(
   async (req: Request, res: Response) => {
-    const { id, donorId } = req.params;
+    const { id } = req.params;
+    const donorId = req.params.donorId || req.body.donorId || req.body.responseId;
     const userId = req.user!.id;
     const userRole = req.user!.role;
     const result = await BloodRequestService.confirmDonorResponse(
