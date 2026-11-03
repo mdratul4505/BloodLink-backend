@@ -211,11 +211,15 @@ export const loginUser = async (
     }
 
     await removeRegistrationOtp(normalizedEmail);
-  } else if (!user.isVerified && user.role !== "ADMIN") {
-    // Generate fresh OTP and send via email so user can immediately verify
+  } else {
+    // Generate fresh OTP and send via email so EVERY login requires OTP verification
     const otp = generateOtp();
     await storeRegistrationOtp(user.email, otp);
-    await sendRegistrationOtpEmail(user.email, otp, user.name);
+    try {
+      await sendRegistrationOtpEmail(user.email, otp, user.name);
+    } catch (mailErr) {
+      console.warn("Notice: Failed to dispatch login OTP email:", mailErr);
+    }
 
     return {
       requiresOtp: true,
