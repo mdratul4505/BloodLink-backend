@@ -225,11 +225,26 @@ export const getDashboardStats = async () => {
   ]);
 
   const stats = {
+    totalUsers,
+    totalDonors,
+    activeDonors,
+    totalRequests,
+    openRequests: Math.max(0, totalRequests - fulfilledRequests),
+    fulfilledRequests,
+    totalOrganizations,
+    verifiedOrganizations,
+    totalCamps,
+    totalDonations,
+    totalPaymentsAmount: paymentsAgg._sum.amount || 0,
+    totalPaymentsCount: paymentsAgg._count.id || 0,
+    totalCollectedFunds: paymentsAgg._sum.amount || 0,
+    totalPaidDonationsCount: paymentsAgg._count.id || 0,
     overview: {
       totalUsers,
       totalDonors,
       activeDonors,
       totalRequests,
+      openRequests: Math.max(0, totalRequests - fulfilledRequests),
       fulfilledRequests,
       totalOrganizations,
       verifiedOrganizations,
@@ -237,6 +252,8 @@ export const getDashboardStats = async () => {
       totalDonations,
       totalCollectedFunds: paymentsAgg._sum.amount || 0,
       totalPaidDonationsCount: paymentsAgg._count.id || 0,
+      totalPaymentsAmount: paymentsAgg._sum.amount || 0,
+      totalPaymentsCount: paymentsAgg._count.id || 0,
     },
     recentRequests,
   };
