@@ -14,14 +14,16 @@
 
 ---
 
-## 🌐 Live Deployment & Base URLs
+## 🌐 Live Deployment & Quick Links
 
-| Resource | URL |
-|---|---|
-| **Live API Base URL (Vercel)** | `https://blood-link-backend-one.vercel.app/api/v1` |
-| **Server Health Check** | `https://blood-link-backend-one.vercel.app/health` |
-| **GitHub Repository** | `https://github.com/mdratul4505/BloodLink-backend.git` |
-| **Local Development URL** | `http://localhost:5000/api/v1` |
+| Resource | URL | Description |
+|---|---|---|
+| 🚀 **Frontend Live URL** | [https://bloodlink-frontend.vercel.app](https://bloodlink-frontend.vercel.app) | Live Production Web Application |
+| ⚡ **Backend Live API (Vercel)** | [https://blood-link-backend-one.vercel.app/api/v1](https://blood-link-backend-one.vercel.app/api/v1) | Production API on Vercel |
+| 🩺 **Server Health Check** | [https://blood-link-backend-one.vercel.app/health](https://blood-link-backend-one.vercel.app/health) | API Health Status |
+| 💻 **Frontend Repository** | [https://github.com/mdratul4505/BloodLink-Frontend](https://github.com/mdratul4505/BloodLink-Frontend) | Next.js 16 Client Source Code |
+| ⚙️ **Backend Repository** | [https://github.com/mdratul4505/BloodLink-backend](https://github.com/mdratul4505/BloodLink-backend) | Express 5 + Prisma 7 Server Code |
+| 💻 **Local Development API** | `http://localhost:5000/api/v1` | Local Development URL |
 
 ---
 
