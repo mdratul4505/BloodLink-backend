@@ -24,9 +24,9 @@ export const config = {
     refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   },
   google: {
-    client_id: process.env.GOOGLE_CLIENT_ID || "",
+    client_id: (process.env.GOOGLE_CLIENT_ID || "").trim(),
   },
-  google_client_id: process.env.GOOGLE_CLIENT_ID || "",
+  google_client_id: (process.env.GOOGLE_CLIENT_ID || "").trim(),
   admin: {
     name: process.env.ADMIN_NAME || "BloodLink Super Admin",
     email: process.env.ADMIN_EMAIL || "admin@bloodlink.org",

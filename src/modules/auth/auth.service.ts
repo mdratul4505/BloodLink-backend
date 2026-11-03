@@ -246,10 +246,12 @@ export const googleLogin = async (payload: IGoogleLoginPayload) => {
   }
 
   let googleIdTokenPayload: TokenPayload | null | undefined = null;
-  const audience =
+  const audience = (
     config.google?.client_id ||
     (config as any).google_client_id ||
-    process.env.GOOGLE_CLIENT_ID;
+    process.env.GOOGLE_CLIENT_ID ||
+    ""
+  ).trim();
 
   try {
     const ticket = await googleClient.verifyIdToken({
@@ -294,14 +296,21 @@ export const googleLogin = async (payload: IGoogleLoginPayload) => {
   const googleId = googleIdTokenPayload.sub;
   const avatar = googleIdTokenPayload.picture;
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [{ googleId }, { email }],
-    },
+  let existingUser = await prisma.user.findUnique({
+    where: { googleId },
     include: {
       donorProfile: true,
     },
   });
+
+  if (!existingUser) {
+    existingUser = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        donorProfile: true,
+      },
+    });
+  }
 
   let user = existingUser;
 
