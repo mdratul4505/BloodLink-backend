@@ -19,6 +19,18 @@ export const createBloodRequest = async (
     organizationId?: string;
   },
 ) => {
+  // Validate that neededBy is today or a future date
+  const parsedNeededBy = new Date(payload.neededBy);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (isNaN(parsedNeededBy.getTime()) || parsedNeededBy < today) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Needed by date must be today or a future date. Past dates are not allowed.",
+    );
+  }
+
   // Create blood request
   const bloodRequest = await prisma.bloodRequest.create({
     data: {
@@ -33,7 +45,7 @@ export const createBloodRequest = async (
       contactPhone: payload.contactPhone,
       note: payload.note,
       urgency: payload.urgency || "NORMAL",
-      neededBy: new Date(payload.neededBy),
+      neededBy: parsedNeededBy,
       status: "OPEN",
     },
     include: {
@@ -254,6 +266,19 @@ export const updateBloodRequest = async (
       httpStatus.FORBIDDEN,
       "You do not have permission to edit this request",
     );
+  }
+
+  if (payload.neededBy) {
+    const parsedNeededBy = new Date(payload.neededBy);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (isNaN(parsedNeededBy.getTime()) || parsedNeededBy < today) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Needed by date must be today or a future date. Past dates are not allowed.",
+      );
+    }
   }
 
   const updated = await prisma.bloodRequest.update({

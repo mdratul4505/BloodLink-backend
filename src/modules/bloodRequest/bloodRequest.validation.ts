@@ -31,7 +31,13 @@ export const createBloodRequestSchema = z.object({
     contactPhone: z.string().min(6, "Contact phone is required"),
     note: z.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: z.string(),
+    neededBy: z.string().refine((val) => {
+      const parsedDate = new Date(val);
+      if (isNaN(parsedDate.getTime())) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return parsedDate >= today;
+    }, "Needed date must be today or a future date"),
     organizationId: z.string().optional(),
   }),
 });
@@ -47,7 +53,16 @@ export const updateBloodRequestSchema = z.object({
     contactPhone: z.string().min(6).optional(),
     note: z.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: z.string().optional(),
+    neededBy: z
+      .string()
+      .refine((val) => {
+        const parsedDate = new Date(val);
+        if (isNaN(parsedDate.getTime())) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return parsedDate >= today;
+      }, "Needed date must be today or a future date")
+      .optional(),
     organizationId: z.string().optional(),
   }),
 });

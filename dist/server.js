@@ -2332,6 +2332,15 @@ import httpStatus11 from "http-status";
 // src/modules/bloodRequest/bloodRequest.service.ts
 import httpStatus10 from "http-status";
 var createBloodRequest = async (userId, payload) => {
+  const parsedNeededBy = new Date(payload.neededBy);
+  const today = /* @__PURE__ */ new Date();
+  today.setHours(0, 0, 0, 0);
+  if (isNaN(parsedNeededBy.getTime()) || parsedNeededBy < today) {
+    throw new AppError_default(
+      httpStatus10.BAD_REQUEST,
+      "Needed by date must be today or a future date. Past dates are not allowed."
+    );
+  }
   const bloodRequest = await prisma_default.bloodRequest.create({
     data: {
       requesterId: userId,
@@ -2345,7 +2354,7 @@ var createBloodRequest = async (userId, payload) => {
       contactPhone: payload.contactPhone,
       note: payload.note,
       urgency: payload.urgency || "NORMAL",
-      neededBy: new Date(payload.neededBy),
+      neededBy: parsedNeededBy,
       status: "OPEN"
     },
     include: {
@@ -2533,6 +2542,17 @@ var updateBloodRequest = async (requestId, userId, userRole, payload) => {
       httpStatus10.FORBIDDEN,
       "You do not have permission to edit this request"
     );
+  }
+  if (payload.neededBy) {
+    const parsedNeededBy = new Date(payload.neededBy);
+    const today = /* @__PURE__ */ new Date();
+    today.setHours(0, 0, 0, 0);
+    if (isNaN(parsedNeededBy.getTime()) || parsedNeededBy < today) {
+      throw new AppError_default(
+        httpStatus10.BAD_REQUEST,
+        "Needed by date must be today or a future date. Past dates are not allowed."
+      );
+    }
   }
   const updated = await prisma_default.bloodRequest.update({
     where: { id: requestId },
@@ -3083,7 +3103,13 @@ var createBloodRequestSchema = z3.object({
     contactPhone: z3.string().min(6, "Contact phone is required"),
     note: z3.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: z3.string(),
+    neededBy: z3.string().refine((val) => {
+      const parsedDate = new Date(val);
+      if (isNaN(parsedDate.getTime())) return false;
+      const today = /* @__PURE__ */ new Date();
+      today.setHours(0, 0, 0, 0);
+      return parsedDate >= today;
+    }, "Needed date must be today or a future date"),
     organizationId: z3.string().optional()
   })
 });
@@ -3098,7 +3124,13 @@ var updateBloodRequestSchema = z3.object({
     contactPhone: z3.string().min(6).optional(),
     note: z3.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: z3.string().optional(),
+    neededBy: z3.string().refine((val) => {
+      const parsedDate = new Date(val);
+      if (isNaN(parsedDate.getTime())) return false;
+      const today = /* @__PURE__ */ new Date();
+      today.setHours(0, 0, 0, 0);
+      return parsedDate >= today;
+    }, "Needed date must be today or a future date").optional(),
     organizationId: z3.string().optional()
   })
 });

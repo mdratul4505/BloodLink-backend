@@ -2368,6 +2368,15 @@ var import_http_status11 = __toESM(require("http-status"), 1);
 // src/modules/bloodRequest/bloodRequest.service.ts
 var import_http_status10 = __toESM(require("http-status"), 1);
 var createBloodRequest = async (userId, payload) => {
+  const parsedNeededBy = new Date(payload.neededBy);
+  const today = /* @__PURE__ */ new Date();
+  today.setHours(0, 0, 0, 0);
+  if (isNaN(parsedNeededBy.getTime()) || parsedNeededBy < today) {
+    throw new AppError_default(
+      import_http_status10.default.BAD_REQUEST,
+      "Needed by date must be today or a future date. Past dates are not allowed."
+    );
+  }
   const bloodRequest = await prisma_default.bloodRequest.create({
     data: {
       requesterId: userId,
@@ -2381,7 +2390,7 @@ var createBloodRequest = async (userId, payload) => {
       contactPhone: payload.contactPhone,
       note: payload.note,
       urgency: payload.urgency || "NORMAL",
-      neededBy: new Date(payload.neededBy),
+      neededBy: parsedNeededBy,
       status: "OPEN"
     },
     include: {
@@ -2569,6 +2578,17 @@ var updateBloodRequest = async (requestId, userId, userRole, payload) => {
       import_http_status10.default.FORBIDDEN,
       "You do not have permission to edit this request"
     );
+  }
+  if (payload.neededBy) {
+    const parsedNeededBy = new Date(payload.neededBy);
+    const today = /* @__PURE__ */ new Date();
+    today.setHours(0, 0, 0, 0);
+    if (isNaN(parsedNeededBy.getTime()) || parsedNeededBy < today) {
+      throw new AppError_default(
+        import_http_status10.default.BAD_REQUEST,
+        "Needed by date must be today or a future date. Past dates are not allowed."
+      );
+    }
   }
   const updated = await prisma_default.bloodRequest.update({
     where: { id: requestId },
@@ -3119,7 +3139,13 @@ var createBloodRequestSchema = import_zod4.z.object({
     contactPhone: import_zod4.z.string().min(6, "Contact phone is required"),
     note: import_zod4.z.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: import_zod4.z.string(),
+    neededBy: import_zod4.z.string().refine((val) => {
+      const parsedDate = new Date(val);
+      if (isNaN(parsedDate.getTime())) return false;
+      const today = /* @__PURE__ */ new Date();
+      today.setHours(0, 0, 0, 0);
+      return parsedDate >= today;
+    }, "Needed date must be today or a future date"),
     organizationId: import_zod4.z.string().optional()
   })
 });
@@ -3134,7 +3160,13 @@ var updateBloodRequestSchema = import_zod4.z.object({
     contactPhone: import_zod4.z.string().min(6).optional(),
     note: import_zod4.z.string().optional(),
     urgency: urgencyEnum.optional(),
-    neededBy: import_zod4.z.string().optional(),
+    neededBy: import_zod4.z.string().refine((val) => {
+      const parsedDate = new Date(val);
+      if (isNaN(parsedDate.getTime())) return false;
+      const today = /* @__PURE__ */ new Date();
+      today.setHours(0, 0, 0, 0);
+      return parsedDate >= today;
+    }, "Needed date must be today or a future date").optional(),
     organizationId: import_zod4.z.string().optional()
   })
 });
