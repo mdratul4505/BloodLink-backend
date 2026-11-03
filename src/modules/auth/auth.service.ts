@@ -154,11 +154,12 @@ export const registerUser = async (payload: {
 };
 
 export const loginUser = async (
-  payload: { email: string; password: string },
+  payload: { email: string; password: string; otp?: string },
   clientIp?: string,
 ) => {
+  const normalizedEmail = payload.email.toLowerCase().trim();
   const user = await prisma.user.findUnique({
-    where: { email: payload.email.toLowerCase() },
+    where: { email: normalizedEmail },
     include: {
       donorProfile: true,
     },
@@ -191,17 +192,37 @@ export const loginUser = async (
     throw new AppError(httpStatus.UNAUTHORIZED, "Invalid email or password");
   }
 
-  // Check email verification status for password logins (Admins exempted)
-  if (!user.isVerified && user.role !== "ADMIN") {
+  // If OTP is provided, verify it and activate account
+  if (payload.otp) {
+    const isValid = await verifyRegistrationOtp(normalizedEmail, payload.otp);
+    if (!isValid) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Invalid or expired OTP verification code.",
+      );
+    }
+
+    if (!user.isVerified) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isVerified: true },
+      });
+      user.isVerified = true;
+    }
+
+    await removeRegistrationOtp(normalizedEmail);
+  } else if (!user.isVerified && user.role !== "ADMIN") {
     // Generate fresh OTP and send via email so user can immediately verify
     const otp = generateOtp();
     await storeRegistrationOtp(user.email, otp);
     await sendRegistrationOtpEmail(user.email, otp, user.name);
 
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      "Your email is not verified yet. A 6-digit OTP verification code has been sent to your Gmail. Please verify your email before logging in.",
-    );
+    return {
+      requiresOtp: true,
+      email: user.email,
+      message:
+        "A 6-digit OTP verification code has been sent to your Gmail. Please enter the OTP to complete login.",
+    };
   }
 
   const accessToken = createToken(

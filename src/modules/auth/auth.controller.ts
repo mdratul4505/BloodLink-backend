@@ -37,6 +37,21 @@ export const register = catchAsync(async (req: Request, res: Response) => {
 export const login = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthService.loginUser(req.body);
 
+  if ((result as any).requiresOtp) {
+    return sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message:
+        (result as any).message ||
+        "A 6-digit OTP verification code has been sent to your Gmail.",
+      data: {
+        requiresOtp: true,
+        email: (result as any).email,
+        message: (result as any).message,
+      },
+    });
+  }
+
   res.cookie("refreshToken", result.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
