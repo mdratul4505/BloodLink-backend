@@ -18,9 +18,26 @@ app.use(
   }),
 );
 
+const allowedOrigins = [
+  config.frontend_url,
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://bloodlink-frontend.vercel.app",
+  "https://blood-link-frontend-iota.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [config.frontend_url, "http://localhost:3000", "http://localhost:5173"],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
