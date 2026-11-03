@@ -48,6 +48,9 @@ export const createBloodRequest = async (
 
   // Business rule: Matching donor notification without failing the request creation
   try {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
     const matchingDonors = await prisma.donorProfile.findMany({
       where: {
         bloodGroup: payload.bloodGroup,
@@ -61,6 +64,10 @@ export const createBloodRequest = async (
           deletedAt: null,
           status: "ACTIVE",
         },
+        OR: [
+          { lastDonationDate: null },
+          { lastDonationDate: { lte: sixMonthsAgo } },
+        ],
       },
       select: {
         userId: true,
@@ -433,6 +440,99 @@ export const getResponsesForRequest = async (
   return responses;
 };
 
+export const confirmDonorResponse = async (
+  requestId: string,
+  donorId: string,
+  userId: string,
+  userRole: string,
+) => {
+  const request = await prisma.bloodRequest.findUnique({
+    where: { id: requestId },
+    include: {
+      requester: {
+        select: { id: true, name: true, phone: true },
+      },
+    },
+  });
+
+  if (!request || request.deletedAt) {
+    throw new AppError(httpStatus.NOT_FOUND, "Blood request not found");
+  }
+
+  const isCreator = request.requesterId === userId;
+  const isAdmin = userRole === "ADMIN";
+
+  if (!isCreator && !isAdmin) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Only the request creator or Admin can approve and confirm donor responses",
+    );
+  }
+
+  const existingResponse = await prisma.donorResponse.findUnique({
+    where: {
+      requestId_donorId: {
+        requestId,
+        donorId,
+      },
+    },
+  });
+
+  if (!existingResponse) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Donor response not found for this request",
+    );
+  }
+
+  if (existingResponse.status === "DONATED") {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Donation has already been completed for this donor",
+    );
+  }
+
+  const updatedResponse = await prisma.donorResponse.update({
+    where: {
+      requestId_donorId: {
+        requestId,
+        donorId,
+      },
+    },
+    data: {
+      status: "CONFIRMED",
+    },
+    include: {
+      donor: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          donorProfile: true,
+        },
+      },
+    },
+  });
+
+  // Notify donor that their response was approved and confirmed
+  try {
+    await prisma.notification.create({
+      data: {
+        userId: donorId,
+        requestId: request.id,
+        type: "RESPONSE_CONFIRMED",
+        title: "Donation Offer Approved! 🩸",
+        message: `${request.requester.name} has approved and confirmed your blood donation offer for ${request.hospitalName}. Please coordinate via emergency hotline: ${request.contactPhone}.`,
+      },
+    });
+  } catch (err) {
+    console.error("Failed to notify donor of confirmed response:", err);
+  }
+
+  return updatedResponse;
+};
+
 /**
  * TECHNICAL CHALLENGE:
  * Complete donation marks donation in an atomic prisma.$transaction:
@@ -559,6 +659,7 @@ export const BloodRequestService = {
   updateRequestStatus,
   respondToRequest,
   getResponsesForRequest,
+  confirmDonorResponse,
   completeDonation,
 };
 

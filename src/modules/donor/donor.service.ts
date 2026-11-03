@@ -35,6 +35,15 @@ export const getAllDonors = async (query: {
     },
   };
 
+  // Rule: Donors who donated within the last 6 months must not be shown
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  whereClause.OR = [
+    { lastDonationDate: null },
+    { lastDonationDate: { lte: sixMonthsAgo } },
+  ];
+
   if (query.bloodGroup) {
     whereClause.bloodGroup = query.bloodGroup;
   }
@@ -129,6 +138,16 @@ export const getDonorById = async (id: string) => {
 
   if (!donor) {
     throw new AppError(httpStatus.NOT_FOUND, "Donor profile not found");
+  }
+
+  // 6 months eligibility verification
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  if (donor.lastDonationDate && donor.lastDonationDate > sixMonthsAgo) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "This donor is currently within the 6-month recovery period and cannot donate blood at this time.",
+    );
   }
 
   return donor;

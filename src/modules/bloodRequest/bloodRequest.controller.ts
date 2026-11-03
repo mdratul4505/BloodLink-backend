@@ -157,6 +157,27 @@ export const getResponsesForRequest = catchAsync(
   },
 );
 
+export const confirmResponse = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id, donorId } = req.params;
+    const userId = req.user!.id;
+    const userRole = req.user!.role;
+    const result = await BloodRequestService.confirmDonorResponse(
+      id as string,
+      donorId as string,
+      userId,
+      userRole,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Donor response confirmed successfully",
+      data: result,
+    });
+  },
+);
+
 export const completeDonation = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -188,6 +209,7 @@ export const BloodRequestController = {
   updateRequestStatus,
   respondToRequest,
   getResponsesForRequest,
+  confirmResponse,
   completeDonation,
 };
 

@@ -45,6 +45,12 @@ router.post(
 router.get("/:id/responses", auth(), BloodRequestController.getResponsesForRequest);
 
 router.patch(
+  "/:id/responses/:donorId/confirm",
+  auth(),
+  BloodRequestController.confirmResponse,
+);
+
+router.patch(
   "/:id/status",
   auth(),
   validateRequest(BloodRequestValidation.updateRequestStatusSchema),
